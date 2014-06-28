@@ -44,22 +44,22 @@ public class OsuApiBeatmap {
      * Overall difficulty (OD)
      */
 	@SerializedName("diff_overall")
-	public int overallDifficulty;
+	public double overallDifficulty;
     /**
      * Circle size value (CS)
      */
 	@SerializedName("diff_size")
-	public int circleSize;
+	public double circleSize;
     /**
      * Approach Rate (AR)
      */
 	@SerializedName("diff_approach")
-	public int approachRate;
+	public double approachRate;
     /**
      * Healthdrain (HP)
      */
 	@SerializedName("diff_drain")
-	public int healthDrain;
+	public double healthDrain;
     /**
      * seconds from first note to last note not including breaks
      */
