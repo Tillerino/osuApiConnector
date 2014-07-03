@@ -105,7 +105,10 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 		}
 		
 		for(String dateField : dateFields) {
-			o.addProperty(dateField, CustomGson.dateTimeFormatter.parseDateTime(o.get(dateField).getAsString()).getMillis());
+			JsonElement jsonElement = o.get(dateField);
+			if(!jsonElement.isJsonNull()) {
+				o.addProperty(dateField, CustomGson.dateTimeFormatter.parseDateTime(jsonElement.getAsString()).getMillis());
+			}
 		}
 
 		return delegate.fromJson(json, typeOfT);

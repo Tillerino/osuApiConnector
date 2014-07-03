@@ -30,7 +30,10 @@ public class OsuApiBeatmap {
 	public int approved;
 	@Date
 	@SerializedName("approved_date")
-	public long approvedDate;
+	/**
+	 * may be null if not ranked
+	 */
+	public Long approvedDate;
 	@Date
 	@SerializedName("last_update")
 	public long lastUpdate;
@@ -78,6 +81,7 @@ public class OsuApiBeatmap {
     static final Gson gson = CustomGson.wrap(OsuApiBeatmap.class);
     
     public static <T extends OsuApiBeatmap> T fromJsonObject(JsonObject o, Class<T> cls) {
+    	System.out.println(o);
     	return gson.fromJson(o, cls);
     }
 
