@@ -78,7 +78,7 @@ public class OsuApiBeatmap {
      */
 	public int mode;
     
-    static final Gson gson = CustomGson.wrap(OsuApiBeatmap.class);
+    static final Gson gson = CustomGson.wrap(false, OsuApiBeatmap.class);
     
     public static <T extends OsuApiBeatmap> T fromJsonObject(JsonObject o, Class<T> cls) {
     	System.out.println(o);

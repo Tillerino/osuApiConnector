@@ -1,6 +1,7 @@
 package org.tillerino.osuApiModel;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -76,13 +77,27 @@ public class Downloader {
 	}
 
 	public <T extends OsuApiBeatmap> T getBeatmap(int beatmapId, Class<T> cls) throws IOException {
-		return OsuApiBeatmap.fromJsonObject((JsonObject) ((JsonArray) get(GET_BEATMAPS, "b",
-				String.valueOf(beatmapId))).get(0), cls);
+		JsonArray array = (JsonArray) get(GET_BEATMAPS, "b",
+				String.valueOf(beatmapId));
+		if(array.size() == 0) {
+			return null;
+		}
+		return OsuApiBeatmap.fromJsonObject((JsonObject) array.get(0), cls);
 	}
 
+	/**
+	 * 
+	 * @param beatmapsetId
+	 * @param cls the class of the desired results.
+	 * @return the beatmap set. no particular order. null if nothing was returned.
+	 * @throws IOException
+	 */
 	public <T extends OsuApiBeatmap> List<T> getBeatmapSet(int beatmapsetId, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_BEATMAPS, "s",
 				String.valueOf(beatmapsetId));
+		if(jsonArray.size() == 0) {
+			return null;
+		}
 		return OsuApiBeatmap.fromJsonArray(jsonArray, cls);
 	}
 
@@ -126,27 +141,31 @@ public class Downloader {
 		httpCon.setRequestProperty("Accept-Encoding", "gzip");
 		InputStream inputStream = httpCon.getInputStream();
 
-		String contentEncoding = httpCon.getContentEncoding();
-		if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip")) {
-			inputStream = new GZIPInputStream(inputStream);
-		}
+		try {
+			String contentEncoding = httpCon.getContentEncoding();
+			if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip")) {
+				inputStream = new GZIPInputStream(inputStream);
+			}
 
-		if (httpCon.getResponseCode() != 200) {
-			throw new IOException("response code " + httpCon.getResponseCode());
-		}
+			if (httpCon.getResponseCode() != 200) {
+				throw new IOException("response code " + httpCon.getResponseCode());
+			}
 
-		if (!httpCon.getContentType().equals("text/html; charset=UTF-8")) {
-			throw new IOException("unexpected content-type: "
-					+ httpCon.getContentType());
-		}
-		
-		byte[] buf = new byte[1024];
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		for(int len; (len = inputStream.read(buf)) > 0;) {
-			baos.write(buf, 0, len);
-		}
+			if (!httpCon.getContentType().contains("application/json;") || !httpCon.getContentType().contains("charset=UTF-8")) {
+				throw new IOException("unexpected content-type: "
+						+ httpCon.getContentType());
+			}
 
-		return baos.toString("UTF-8");
+			byte[] buf = new byte[1024];
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			for(int len; (len = inputStream.read(buf)) > 0;) {
+				baos.write(buf, 0, len);
+			}
+
+			return baos.toString("UTF-8");
+		} finally {
+			httpCon.disconnect();
+		}
 	}
 
 }

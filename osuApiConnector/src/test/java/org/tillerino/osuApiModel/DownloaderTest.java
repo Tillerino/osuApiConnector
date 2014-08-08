@@ -46,4 +46,11 @@ public class DownloaderTest {
 	public void testImplicitApiKey() {
 		new Downloader();
 	}
+	
+	@Test
+	public void testBeatmapNotFound() throws IOException {
+		Downloader downloader = new Downloader();
+		
+		assertNull(downloader.getBeatmap(1, OsuApiBeatmap.class));
+	}
 }

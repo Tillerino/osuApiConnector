@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.joda.time.DateTimeZone;
@@ -34,10 +35,12 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 	final private Gson delegate;
 	final Set<String> fields = new HashSet<>();
 	final List<String> dateFields = new ArrayList<>();
+	final boolean throwOnPropertyNotCovered;
 	public static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forOffsetHours(8));
 
-	private CustomGson(Class<?> baseCls, final Class<?> instanceClass) {
+	private CustomGson(Class<?> baseCls, final Class<?> instanceClass, boolean throwOnPropertyNotCovered) {
 		super();
+		this.throwOnPropertyNotCovered = throwOnPropertyNotCovered;
 		GsonBuilder delegateBuilder = new GsonBuilder();
 		delegateBuilder.addDeserializationExclusionStrategy(new ExclusionStrategy() {
 			@Override
@@ -104,6 +107,14 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 			}
 		}
 		
+		if(throwOnPropertyNotCovered) {
+			for(Entry<String, ?> e : o.entrySet()) {
+				if(!fields.contains(e.getKey())) {
+					throw new RuntimeException("class does not cover property: " + e.getKey());
+				}
+			}
+		}
+		
 		for(String dateField : dateFields) {
 			JsonElement jsonElement = o.get(dateField);
 			if(!jsonElement.isJsonNull()) {
@@ -114,7 +125,7 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 		return delegate.fromJson(json, typeOfT);
 	}
 
-	public static Gson wrap(Class<?>... classes) {
+	public static Gson wrap(final boolean throwOnPropertyNotCovered, Class<?>... classes) {
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		for (int i = 0; i < classes.length; i++) {
 			final Class<?> baseCls = classes[i];
@@ -126,7 +137,7 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 					}
 					
 					GsonBuilder builderForThisType = new GsonBuilder();
-					builderForThisType.registerTypeAdapter(requestedType.getType(), new CustomGson<>(baseCls, requestedType.getRawType()));
+					builderForThisType.registerTypeAdapter(requestedType.getType(), new CustomGson<>(baseCls, requestedType.getRawType(), throwOnPropertyNotCovered));
 					
 					final Gson gsonForThisType = builderForThisType.create();
 					
