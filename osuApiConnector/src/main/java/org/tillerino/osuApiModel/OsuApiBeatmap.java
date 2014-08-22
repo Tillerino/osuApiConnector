@@ -1,9 +1,17 @@
 package org.tillerino.osuApiModel;
 
+import static java.lang.Math.min;
+import static org.tillerino.osuApiModel.Mods.DoubleTime;
+import static org.tillerino.osuApiModel.Mods.Easy;
+import static org.tillerino.osuApiModel.Mods.HalfTime;
+import static org.tillerino.osuApiModel.Mods.HardRock;
+import static org.tillerino.osuApiModel.Mods.Nightcore;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
+
 import org.tillerino.osuApiModel.deserializer.CustomGson;
 import org.tillerino.osuApiModel.deserializer.Date;
 
@@ -81,7 +89,6 @@ public class OsuApiBeatmap {
     static final Gson gson = CustomGson.wrap(false, OsuApiBeatmap.class);
     
     public static <T extends OsuApiBeatmap> T fromJsonObject(JsonObject o, Class<T> cls) {
-    	System.out.println(o);
     	return gson.fromJson(o, cls);
     }
 
@@ -91,5 +98,66 @@ public class OsuApiBeatmap {
 			ret.add(fromJsonObject((JsonObject) elem, cls));
 		}
 		return ret;
+	}
+
+	public static double arToMs(double ar) {
+		if(ar < 5)
+			return 1800 - ar * 120;
+		return 1200 - 150 * (ar - 5);
+	}
+
+	public static double msToAr(double ms) {
+		if(ms > 1200)
+			return (1800 - ms) / 120;
+		
+		return (1200 - ms) / 150 + 5;
+	}
+
+	public static double odToMs(double od) {
+		return 80 - 6 * od;
+	}
+
+	public static double msToOd(double ms) {
+		return (80 - ms) / 6;
+	}
+
+	public static double calcAR(double ar, long mods) {
+		if(Easy.is(mods)) {
+			ar /= 2;
+		}
+		if(HardRock.is(mods)) {
+			ar = min(10, ar * 1.4);
+		}
+		if(DoubleTime.is(mods) || Nightcore.is(mods)) {
+			ar = msToAr(arToMs(ar) * 2 / 3);
+		}
+		if(HalfTime.is(mods)) {
+			ar = msToAr(arToMs(ar) * 1.5);
+		}
+		return ar;
+	}
+
+	public static double calcOd(double od, long mods) {
+		if(Easy.is(mods)) {
+			od /= 2;
+		}
+		if(HardRock.is(mods)) {
+			od = min(10, od * 1.4);
+		}
+		if(DoubleTime.is(mods) || Nightcore.is(mods)) {
+			od = msToOd(odToMs(od) * 2 / 3);
+		}
+		if(HalfTime.is(mods)) {
+			od = msToOd(odToMs(od) * 1.5);
+		}
+		return od;
+	}
+	
+	public double getApproachRate(long mods) {
+		return calcAR(getApproachRate(), mods);
+	}
+	
+	public double getOverallDifficulty(long mods) {
+		return calcOd(getOverallDifficulty(), mods);
 	}
 }

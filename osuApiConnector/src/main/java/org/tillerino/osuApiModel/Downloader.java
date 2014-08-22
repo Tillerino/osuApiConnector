@@ -4,9 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -21,6 +23,12 @@ public class Downloader {
 	public static final String API_BASE_URL = "http://osu.ppy.sh/api/";
 
 	public static final String GET_BEATMAPS = "get_beatmaps";
+	
+	public static final String GET_USER_BEST = "get_user_best";
+	
+	public static final String GET_SCORES = "get_scores";
+	
+	public static final String GET_USER = "get_user";
 
 	private final String key;
 
@@ -116,7 +124,7 @@ public class Downloader {
 	}
 
 	public URL formURL(String command, String... parameters)
-			throws MalformedURLException {
+			throws IOException {
 		if (parameters.length % 2 != 0) {
 			throw new IllegalArgumentException("must provide key value pairs!");
 		}
@@ -129,7 +137,7 @@ public class Downloader {
 			builder.append("&");
 			builder.append(parameters[i]);
 			builder.append("=");
-			builder.append(parameters[i + 1]);
+			builder.append(URLEncoder.encode(parameters[i + 1], "UTF-8"));
 		}
 
 		URL url = new URL(builder.toString());
@@ -168,4 +176,54 @@ public class Downloader {
 		}
 	}
 
+	/**
+	 * gets a user's top scores
+	 * @param userId user's integer id
+	 * @param mode game mode (see {@link GameMode})
+	 * @param limit number of entries to retreive, 1-50
+	 * @param cls desired object class
+	 * @return
+	 * @throws IOException
+	 */
+	public <T extends OsuApiScore> List<T> getUserTop(int userId, int mode, int limit, Class<T> cls) throws IOException {
+		JsonArray jsonArray = (JsonArray) get(GET_USER_BEST, "u", String.valueOf(userId), "m", String.valueOf(mode), "limit", String.valueOf(limit), "type", "id");
+		
+		return OsuApiScore.fromJsonArray(jsonArray, cls, mode);
+	}
+	
+	public <T extends OsuApiScore> T getScore(int userId, int beatmapId, int mode, Class<T> cls) throws IOException {
+		JsonElement jsonElement = get(GET_SCORES, "b", String.valueOf(beatmapId), "u", String.valueOf(userId), "m", String.valueOf(mode));
+		
+		if(jsonElement.isJsonNull())
+			return null;
+		
+		JsonArray jsonArray = (JsonArray) jsonElement;
+		
+		if(jsonArray.size() == 0) {
+			return null;
+		}
+		JsonObject jsonObject = (JsonObject) jsonArray.get(0);
+		
+		jsonObject.addProperty("beatmap_id", beatmapId);
+		
+		return OsuApiScore.fromJsonObject(jsonObject, cls, mode);
+	}
+	
+	public <T extends OsuApiUser> T getUser(int userId, int mode, Class<T> cls) throws IOException {
+		JsonArray jsonArray = (JsonArray) get(GET_USER, "u", String.valueOf(userId), "m", String.valueOf(mode), "type", "id");
+		
+		if(jsonArray.size() == 0) {
+			return null;
+		}
+		return OsuApiUser.fromJsonObject((JsonObject) jsonArray.get(0), cls);
+	}
+
+	public <T extends OsuApiUser> T getUser(String username, int mode, Class<T> cls) throws IOException {
+		JsonArray jsonArray = (JsonArray) get(GET_USER, "u", username, "m", String.valueOf(mode), "type", "string");
+		
+		if(jsonArray.size() == 0) {
+			return null;
+		}
+		return OsuApiUser.fromJsonObject((JsonObject) jsonArray.get(0), cls);
+	}
 }

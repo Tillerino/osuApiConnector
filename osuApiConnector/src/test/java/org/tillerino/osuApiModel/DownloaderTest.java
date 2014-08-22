@@ -11,12 +11,12 @@ import org.junit.Test;
 
 public class DownloaderTest {
 	@Test
-	public void testFormURL() throws MalformedURLException {
+	public void testFormURL() throws IOException {
 		assertEquals(new URL("http://osu.ppy.sh/api/verb?k=key&parameter=value"), new Downloader("key").formURL("verb", "parameter", "value"));
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
-	public void testFormURLWrongArgNumber() throws MalformedURLException {
+	public void testFormURLWrongArgNumber() throws IOException {
 		new Downloader("key").formURL("verb", "parameterWithoutValue");
 	}
 	
