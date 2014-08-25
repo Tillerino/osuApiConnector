@@ -53,4 +53,11 @@ public class DownloaderTest {
 		
 		assertNull(downloader.getBeatmap(1, OsuApiBeatmap.class));
 	}
+
+	@Test
+	public void testGetBeatmapTop() throws Exception {
+		Downloader downloader = new Downloader();
+		
+		downloader.getBeatmapTop(53, 0, OsuApiScore.class);
+	}
 }

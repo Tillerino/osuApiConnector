@@ -191,6 +191,25 @@ public class Downloader {
 		return OsuApiScore.fromJsonArray(jsonArray, cls, mode);
 	}
 	
+	/**
+	 * gets a user's top scores
+	 * @param userId user's integer id
+	 * @param mode game mode (see {@link GameMode})
+	 * @param limit number of entries to retreive, 1-50
+	 * @param cls desired object class
+	 * @return
+	 * @throws IOException
+	 */
+	public <T extends OsuApiScore> List<T> getBeatmapTop(int beatmapId, int mode, Class<T> cls) throws IOException {
+		JsonArray jsonArray = (JsonArray) get(GET_SCORES, "b", String.valueOf(beatmapId), "m", String.valueOf(mode));
+		
+		for (int i = 0; i < jsonArray.size(); i++) {
+			jsonArray.get(i).getAsJsonObject().addProperty("beatmap_id", beatmapId);
+		}
+		
+		return OsuApiScore.fromJsonArray(jsonArray, cls, mode);
+	}
+	
 	public <T extends OsuApiScore> T getScore(int userId, int beatmapId, int mode, Class<T> cls) throws IOException {
 		JsonElement jsonElement = get(GET_SCORES, "b", String.valueOf(beatmapId), "u", String.valueOf(userId), "m", String.valueOf(mode));
 		
