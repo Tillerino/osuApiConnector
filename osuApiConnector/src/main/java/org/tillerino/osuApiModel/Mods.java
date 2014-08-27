@@ -67,7 +67,7 @@ public enum Mods {
 		return ret;
 	}
 	
-	public static LinkedList<Mods> getMods(String modsString) {
+	public static LinkedList<Mods> fromShortNamesCommaSeparated(String modsString) {
 		prepare();
 		LinkedList<Mods> ret = new LinkedList<>();
 		if(modsString.equals("None"))
@@ -148,7 +148,26 @@ public enum Mods {
 		return effective;
 	}
 	
-	public static String getShortNames(Collection<Mods> mods) {
+	public static Long fromShortNamesContinuous(String message) {
+		long mods = 0;
+		for(int i = 0; i < message.length(); i+=2) {
+			try {
+				Mods mod = fromShortName(message.substring(i, i + 2).toUpperCase());
+				if(mod.isEffective()) {
+					if(mod == Nightcore) {
+						mods |= getMask(DoubleTime);
+					} else {
+						mods |= getMask(mod);
+					}
+				}
+			} catch(Exception e) {
+				return null;
+			}
+		}
+		return mods;
+	}
+
+	public static String toShortNamesContinuous(Collection<Mods> mods) {
 		String ret = "";
 		
 		for (Mods mod : mods) {
