@@ -176,4 +176,12 @@ public enum Mods {
 		
 		return ret;
 	}
+	
+	public static long fixNC(long mods) {
+		if((mods & Nightcore.bit) != 0) {
+			mods |= DoubleTime.bit;
+			mods &= ~Nightcore.bit;
+		}
+		return mods;
+	}
 }
