@@ -57,10 +57,10 @@ public class OsuApiBeatmapTest {
 
 	@Test
 	public void testCalcAR() throws Exception {
-		assertEquals(-7.5, OsuApiBeatmap.calcAR(0, getMask(HalfTime, Easy)), 1E-15);
-		assertEquals(-3, OsuApiBeatmap.calcAR(6, getMask(HalfTime, Easy)), 1E-15);
-		assertEquals(3.75, OsuApiBeatmap.calcAR(7, getMask(HalfTime)), 1E-15);
-		assertEquals(8.5, OsuApiBeatmap.calcAR(10, getMask(HalfTime, HardRock)), 1E-15);
+		assertEquals(-5, OsuApiBeatmap.calcAR(0, getMask(HalfTime, Easy)), 1E-15);
+		assertEquals(-1, OsuApiBeatmap.calcAR(6, getMask(HalfTime, Easy)), 1E-15);
+		assertEquals(5, OsuApiBeatmap.calcAR(7, getMask(HalfTime)), 1E-15);
+		assertEquals(9, OsuApiBeatmap.calcAR(10, getMask(HalfTime, HardRock)), 1E-15);
 		assertEquals(6 + 2 / 30d, OsuApiBeatmap.calcAR(4, getMask(DoubleTime, Easy)), 1E-15);
 		assertEquals(9 + 2 / 3d, OsuApiBeatmap.calcAR(8, getMask(DoubleTime)), 2E-15);
 		assertEquals(10 + 1 / 3d, OsuApiBeatmap.calcAR(9, getMask(DoubleTime)), 2E-15);
@@ -69,7 +69,7 @@ public class OsuApiBeatmapTest {
 
 	@Test
 	public void testArToMs() {
-		assertEquals(2700, OsuApiBeatmap.arToMs(-7.5), 1E-15);
+		assertEquals(2400, OsuApiBeatmap.arToMs(-5), 1E-15);
 		assertEquals(1800, OsuApiBeatmap.arToMs(0), 1E-15);
 		assertEquals(1560, OsuApiBeatmap.arToMs(2), 1E-15);
 		assertEquals(1200, OsuApiBeatmap.arToMs(5), 1E-15);

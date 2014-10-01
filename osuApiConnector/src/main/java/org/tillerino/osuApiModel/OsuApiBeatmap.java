@@ -129,10 +129,10 @@ public class OsuApiBeatmap {
 			ar = min(10, ar * 1.4);
 		}
 		if(DoubleTime.is(mods) || Nightcore.is(mods)) {
-			ar = msToAr(arToMs(ar) * 2 / 3);
+			ar = msToAr(arToMs(ar) * 2 / 3d);
 		}
 		if(HalfTime.is(mods)) {
-			ar = msToAr(arToMs(ar) * 1.5);
+			ar = msToAr(arToMs(ar) * 4 / 3d);
 		}
 		return ar;
 	}
