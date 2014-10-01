@@ -24,67 +24,67 @@ import com.google.gson.annotations.SerializedName;
 @Data
 public class OsuApiBeatmap {
 	@SerializedName("beatmap_id")
-	public int id;
+	private int id;
 	@SerializedName("beatmapset_id")
-	public int setId;
-	public String artist;
-	public String title;
-	public String version;
-	public String creator;
-	public String source;
+	private int setId;
+	private String artist;
+	private String title;
+	private String version;
+	private String creator;
+	private String source;
 	/**
 	 * 3 = qualified, 2 = approved, 1 = ranked, 0 = pending, -1 = WIP, -2 = graveyard
 	 */
-	public int approved;
+	private int approved;
 	@Date
 	@SerializedName("approved_date")
 	/**
 	 * may be null if not ranked
 	 */
-	public Long approvedDate;
+	private Long approvedDate;
 	@Date
 	@SerializedName("last_update")
-	public long lastUpdate;
-	public double bpm; // can this be non-integral?
+	private long lastUpdate;
+	private double bpm; // can this be non-integral?
 	/**
      * Star difficulty
      */
 	@SerializedName("difficultyrating")
-	public double starDifficulty;
+	private double starDifficulty;
     /**
      * Overall difficulty (OD)
      */
 	@SerializedName("diff_overall")
-	public double overallDifficulty;
+	private double overallDifficulty;
     /**
      * Circle size value (CS)
      */
 	@SerializedName("diff_size")
-	public double circleSize;
+	private double circleSize;
     /**
      * Approach Rate (AR)
      */
 	@SerializedName("diff_approach")
-	public double approachRate;
+	private double approachRate;
     /**
      * Healthdrain (HP)
      */
 	@SerializedName("diff_drain")
-	public double healthDrain;
+	private double healthDrain;
     /**
      * seconds from first note to last note not including breaks
      */
 	@SerializedName("hit_length")
-	public int hitLength;
+	private int hitLength;
 	/**
      * seconds from first note to last note including breaks
      */
 	@SerializedName("total_length")
-	public int totalLength; 
+	private int totalLength; 
 	/**
      * mode (0 = osu!, 1 = Taiko, 2 = CtB, 3 = osu!mania)
      */
-	public int mode;
+	private int mode;
     
     static final Gson gson = CustomGson.wrap(false, OsuApiBeatmap.class);
     

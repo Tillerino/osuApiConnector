@@ -14,7 +14,7 @@ public class OsuApiBeatmapTest {
 	public void testRegression() throws IOException {
 		OsuApiBeatmap expected = new OsuApiBeatmap();
 
-		expected.id=75; expected.setId=1; expected.artist="Kenji Ninuma"; expected.title="DISCO PRINCE"; expected.version="Normal"; expected.creator="peppy"; expected.source=""; expected.approved=1; expected.approvedDate=1191692791000l; expected.lastUpdate=1191692791000l; expected.bpm=119.999; expected.starDifficulty=2.2918; expected.overallDifficulty=6; expected.circleSize=4; expected.approachRate=6; expected.healthDrain=6; expected.hitLength=108; expected.totalLength=141; expected.mode=0;
+		expected.setId(75); expected.setSetId(1); expected.setArtist("Kenji Ninuma"); expected.setTitle("DISCO PRINCE"); expected.setVersion("Normal"); expected.setCreator("peppy"); expected.setSource(""); expected.setApproved(1); expected.setApprovedDate(1191692791000l); expected.setLastUpdate(1191692791000l); expected.setBpm(119.999); expected.setStarDifficulty(2.2918); expected.setOverallDifficulty(6); expected.setCircleSize(4); expected.setApproachRate(6); expected.setHealthDrain(6); expected.setHitLength(108); expected.setTotalLength(141); expected.setMode(0);
 
 		OsuApiBeatmap downloaded = new Downloader().getBeatmap(75, OsuApiBeatmap.class);
 
