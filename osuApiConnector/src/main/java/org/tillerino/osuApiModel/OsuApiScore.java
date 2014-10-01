@@ -66,6 +66,10 @@ public class OsuApiScore {
 	public static final DecimalFormat percentage = new DecimalFormat("#.##%");
 
 	public double getAccuracy() {
+		return getAccuracy(count300, count100, count50, countmiss);
+	}
+	
+	public static double getAccuracy(double count300, double count100, double count50, double countmiss) {
 		double sum = 0d;
 
 		sum += count50 * 50;

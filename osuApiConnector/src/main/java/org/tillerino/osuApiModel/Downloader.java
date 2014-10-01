@@ -1,17 +1,16 @@
 package org.tillerino.osuApiModel;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+
+import javax.annotation.CheckForNull;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -84,6 +83,7 @@ public class Downloader {
 		}
 	}
 
+	@CheckForNull
 	public <T extends OsuApiBeatmap> T getBeatmap(int beatmapId, Class<T> cls) throws IOException {
 		JsonArray array = (JsonArray) get(GET_BEATMAPS, "b",
 				String.valueOf(beatmapId));
@@ -100,6 +100,7 @@ public class Downloader {
 	 * @return the beatmap set. no particular order. null if nothing was returned.
 	 * @throws IOException
 	 */
+	@CheckForNull
 	public <T extends OsuApiBeatmap> List<T> getBeatmapSet(int beatmapsetId, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_BEATMAPS, "s",
 				String.valueOf(beatmapsetId));
@@ -210,6 +211,7 @@ public class Downloader {
 		return OsuApiScore.fromJsonArray(jsonArray, cls, mode);
 	}
 	
+	@CheckForNull
 	public <T extends OsuApiScore> T getScore(int userId, int beatmapId, int mode, Class<T> cls) throws IOException {
 		JsonElement jsonElement = get(GET_SCORES, "b", String.valueOf(beatmapId), "u", String.valueOf(userId), "m", String.valueOf(mode));
 		
@@ -228,6 +230,7 @@ public class Downloader {
 		return OsuApiScore.fromJsonObject(jsonObject, cls, mode);
 	}
 	
+	@CheckForNull
 	public <T extends OsuApiUser> T getUser(int userId, int mode, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_USER, "u", String.valueOf(userId), "m", String.valueOf(mode), "type", "id");
 		
@@ -237,6 +240,7 @@ public class Downloader {
 		return OsuApiUser.fromJsonObject((JsonObject) jsonArray.get(0), cls);
 	}
 
+	@CheckForNull
 	public <T extends OsuApiUser> T getUser(String username, int mode, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_USER, "u", username, "m", String.valueOf(mode), "type", "string");
 		
