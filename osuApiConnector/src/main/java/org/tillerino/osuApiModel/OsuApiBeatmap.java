@@ -153,11 +153,35 @@ public class OsuApiBeatmap {
 		return od;
 	}
 	
+	public static double calcBpm(double bpm, long mods) {
+		if(DoubleTime.is(mods))
+			bpm *= 1.5;
+		if(HalfTime.is(mods))
+			bpm *= 0.75;
+		return bpm;
+	}
+	
+	public static int calcTotalLength(int totalLength, long mods) {
+		if(DoubleTime.is(mods))
+			totalLength = (int) (totalLength * 2D/3);
+		if(HalfTime.is(mods))
+			totalLength = (int) (totalLength * 4D/3);
+		return totalLength;
+	}
+	
 	public double getApproachRate(long mods) {
 		return calcAR(getApproachRate(), mods);
 	}
 	
 	public double getOverallDifficulty(long mods) {
 		return calcOd(getOverallDifficulty(), mods);
+	}
+	
+	public double getBpm(long mods) {
+		return calcBpm(getBpm(), mods);
+	}
+	
+	public int getTotalLength(long mods) {
+		return calcTotalLength(getTotalLength(), mods);
 	}
 }
