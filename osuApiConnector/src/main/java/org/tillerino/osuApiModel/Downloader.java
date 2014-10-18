@@ -28,6 +28,8 @@ public class Downloader {
 	public static final String GET_SCORES = "get_scores";
 	
 	public static final String GET_USER = "get_user";
+	
+	public static final String GET_USER_RECENT = "get_user_recent";
 
 	private final String key;
 
@@ -148,6 +150,8 @@ public class Downloader {
 	public static String downloadDirect(URL url) throws IOException {
 		HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
 		httpCon.setRequestProperty("Accept-Encoding", "gzip");
+		httpCon.setConnectTimeout(5000);
+		httpCon.setReadTimeout(5000);
 		InputStream inputStream = httpCon.getInputStream();
 
 		try {
@@ -248,5 +252,11 @@ public class Downloader {
 			return null;
 		}
 		return OsuApiUser.fromJsonObject((JsonObject) jsonArray.get(0), cls);
+	}
+	
+	public <T extends OsuApiScore> List<T> getUserRecent(int userid, int mode, Class<T> cls) throws IOException {
+		JsonArray jsonArray = (JsonArray) get(GET_USER_RECENT, "u", String.valueOf(userid), "m", String.valueOf(mode), "type", "id");
+		
+		return OsuApiScore.fromJsonArray(jsonArray, cls, mode);
 	}
 }
