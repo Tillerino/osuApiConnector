@@ -100,6 +100,8 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 	@Override
 	public T deserialize(JsonElement json, Type typeOfT,
 			JsonDeserializationContext context) throws JsonParseException {
+		if(!(json instanceof JsonObject))
+			throw new JsonParseException("expecting JsonObject, was " + json.getClass());
 		JsonObject o = (JsonObject) json;
 		for(String f : fields) {
 			if(!o.has(f)) {

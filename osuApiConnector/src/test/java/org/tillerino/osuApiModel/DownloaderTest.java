@@ -59,4 +59,11 @@ public class DownloaderTest {
 		
 		downloader.getBeatmapTop(53, 0, OsuApiScore.class);
 	}
+	
+	@Test
+	public void testGetUser() throws Exception {
+		Downloader downloader = new Downloader();
+		
+		downloader.getUser("Tillerino", GameModes.OSU, OsuApiUser.class);
+	}
 }

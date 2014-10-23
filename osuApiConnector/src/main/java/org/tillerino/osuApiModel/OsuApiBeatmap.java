@@ -11,9 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.tillerino.osuApiModel.deserializer.CustomGson;
 import org.tillerino.osuApiModel.deserializer.Date;
+import org.tillerino.osuApiModel.types.BeatmapId;
+import org.tillerino.osuApiModel.types.BeatmapSetId;
+import org.tillerino.osuApiModel.types.BitwiseMods;
+import org.tillerino.osuApiModel.types.GameMode;
+import org.tillerino.osuApiModel.types.MillisSinceEpoch;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -23,10 +30,18 @@ import com.google.gson.annotations.SerializedName;
 
 @Data
 public class OsuApiBeatmap {
+	@BeatmapId
+	@Getter(onMethod=@__(@BeatmapId))
+	@Setter(onParam=@__(@BeatmapId))
 	@SerializedName("beatmap_id")
-	private int id;
+	private int beatmapId;
+	
+	@BeatmapSetId
+	@Getter(onMethod=@__(@BeatmapSetId))
+	@Setter(onParam=@__(@BeatmapSetId))
 	@SerializedName("beatmapset_id")
 	private int setId;
+	
 	private String artist;
 	private String title;
 	private String version;
@@ -36,54 +51,74 @@ public class OsuApiBeatmap {
 	 * 3 = qualified, 2 = approved, 1 = ranked, 0 = pending, -1 = WIP, -2 = graveyard
 	 */
 	private int approved;
-	@Date
-	@SerializedName("approved_date")
+	
 	/**
 	 * may be null if not ranked
 	 */
-	private Long approvedDate;
 	@Date
+	@MillisSinceEpoch
+	@Getter(onMethod=@__(@MillisSinceEpoch))
+	@Setter(onParam=@__(@MillisSinceEpoch))
+	@SerializedName("approved_date")
+	private Long approvedDate;
+	
+	@Date
+	@MillisSinceEpoch
+	@Getter(onMethod=@__(@MillisSinceEpoch))
+	@Setter(onParam=@__(@MillisSinceEpoch))
 	@SerializedName("last_update")
 	private long lastUpdate;
+	
 	private double bpm; // can this be non-integral?
+	
 	/**
      * Star difficulty
      */
 	@SerializedName("difficultyrating")
 	private double starDifficulty;
+	
     /**
      * Overall difficulty (OD)
      */
 	@SerializedName("diff_overall")
 	private double overallDifficulty;
+	
     /**
      * Circle size value (CS)
      */
 	@SerializedName("diff_size")
 	private double circleSize;
+	
     /**
      * Approach Rate (AR)
      */
 	@SerializedName("diff_approach")
 	private double approachRate;
+	
     /**
      * Healthdrain (HP)
      */
 	@SerializedName("diff_drain")
 	private double healthDrain;
+	
     /**
      * seconds from first note to last note not including breaks
      */
 	@SerializedName("hit_length")
 	private int hitLength;
+	
 	/**
      * seconds from first note to last note including breaks
      */
 	@SerializedName("total_length")
 	private int totalLength; 
+	
 	/**
      * mode (0 = osu!, 1 = Taiko, 2 = CtB, 3 = osu!mania)
      */
+	@GameMode
+	@Getter(onMethod=@__(@GameMode))
+	@Setter(onParam=@__(@GameMode))
 	private int mode;
     
     static final Gson gson = CustomGson.wrap(false, OsuApiBeatmap.class);
@@ -121,7 +156,7 @@ public class OsuApiBeatmap {
 		return (80 - ms) / 6;
 	}
 
-	public static double calcAR(double ar, long mods) {
+	public static double calcAR(double ar, @BitwiseMods long mods) {
 		if(Easy.is(mods)) {
 			ar /= 2;
 		}
@@ -137,7 +172,7 @@ public class OsuApiBeatmap {
 		return ar;
 	}
 
-	public static double calcOd(double od, long mods) {
+	public static double calcOd(double od, @BitwiseMods long mods) {
 		if(Easy.is(mods)) {
 			od /= 2;
 		}
@@ -153,7 +188,7 @@ public class OsuApiBeatmap {
 		return od;
 	}
 	
-	public static double calcBpm(double bpm, long mods) {
+	public static double calcBpm(double bpm, @BitwiseMods long mods) {
 		if(DoubleTime.is(mods))
 			bpm *= 1.5;
 		if(HalfTime.is(mods))
@@ -161,7 +196,7 @@ public class OsuApiBeatmap {
 		return bpm;
 	}
 	
-	public static int calcTotalLength(int totalLength, long mods) {
+	public static int calcTotalLength(int totalLength, @BitwiseMods long mods) {
 		if(DoubleTime.is(mods))
 			totalLength = (int) (totalLength * 2D/3);
 		if(HalfTime.is(mods))
@@ -169,19 +204,19 @@ public class OsuApiBeatmap {
 		return totalLength;
 	}
 	
-	public double getApproachRate(long mods) {
+	public double getApproachRate(@BitwiseMods long mods) {
 		return calcAR(getApproachRate(), mods);
 	}
 	
-	public double getOverallDifficulty(long mods) {
+	public double getOverallDifficulty(@BitwiseMods long mods) {
 		return calcOd(getOverallDifficulty(), mods);
 	}
 	
-	public double getBpm(long mods) {
+	public double getBpm(@BitwiseMods long mods) {
 		return calcBpm(getBpm(), mods);
 	}
 	
-	public int getTotalLength(long mods) {
+	public int getTotalLength(@BitwiseMods long mods) {
 		return calcTotalLength(getTotalLength(), mods);
 	}
 }

@@ -3,6 +3,7 @@ package org.tillerino.osuApiModel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -11,6 +12,13 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import javax.annotation.CheckForNull;
+
+import lombok.SneakyThrows;
+
+import org.tillerino.osuApiModel.types.BeatmapId;
+import org.tillerino.osuApiModel.types.BeatmapSetId;
+import org.tillerino.osuApiModel.types.GameMode;
+import org.tillerino.osuApiModel.types.UserId;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -53,6 +61,7 @@ public class Downloader {
 	 * look for the system property "osuapikey" and then for a resource named
 	 * "osuapikey", either of which should only contain a valid api key.
 	 */
+	@SneakyThrows(UnsupportedEncodingException.class)
 	public Downloader() {
 		String systemKey = System.getProperty("osuapikey");
 
@@ -76,7 +85,7 @@ public class Downloader {
 				throw new RuntimeException(e);
 			}
 
-			String resourceKey = new String(buf, 0, len);
+			String resourceKey = new String(buf, 0, len, "UTF-8");
 			if(!keyPattern.matcher(resourceKey).matches()) {
 				throw new RuntimeException("resource osuapikey found, but looks invalid: " + resourceKey);
 			}
@@ -86,7 +95,7 @@ public class Downloader {
 	}
 
 	@CheckForNull
-	public <T extends OsuApiBeatmap> T getBeatmap(int beatmapId, Class<T> cls) throws IOException {
+	public <T extends OsuApiBeatmap> T getBeatmap(@BeatmapId int beatmapId, Class<T> cls) throws IOException {
 		JsonArray array = (JsonArray) get(GET_BEATMAPS, "b",
 				String.valueOf(beatmapId));
 		if(array.size() == 0) {
@@ -103,7 +112,7 @@ public class Downloader {
 	 * @throws IOException
 	 */
 	@CheckForNull
-	public <T extends OsuApiBeatmap> List<T> getBeatmapSet(int beatmapsetId, Class<T> cls) throws IOException {
+	public <T extends OsuApiBeatmap> List<T> getBeatmapSet(@BeatmapSetId int beatmapsetId, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_BEATMAPS, "s",
 				String.valueOf(beatmapsetId));
 		if(jsonArray.size() == 0) {
@@ -177,6 +186,7 @@ public class Downloader {
 
 			return baos.toString("UTF-8");
 		} finally {
+			inputStream.close();
 			httpCon.disconnect();
 		}
 	}
@@ -184,28 +194,27 @@ public class Downloader {
 	/**
 	 * gets a user's top scores
 	 * @param userId user's integer id
-	 * @param mode game mode (see {@link GameMode})
+	 * @param mode game mode (see {@link GameModes})
 	 * @param limit number of entries to retreive, 1-50
 	 * @param cls desired object class
 	 * @return
 	 * @throws IOException
 	 */
-	public <T extends OsuApiScore> List<T> getUserTop(int userId, int mode, int limit, Class<T> cls) throws IOException {
+	public <T extends OsuApiScore> List<T> getUserTop(@UserId int userId, @GameMode int mode, int limit, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_USER_BEST, "u", String.valueOf(userId), "m", String.valueOf(mode), "limit", String.valueOf(limit), "type", "id");
 		
 		return OsuApiScore.fromJsonArray(jsonArray, cls, mode);
 	}
 	
 	/**
-	 * gets a user's top scores
-	 * @param userId user's integer id
-	 * @param mode game mode (see {@link GameMode})
-	 * @param limit number of entries to retreive, 1-50
+	 * gets a the top scores for a beatmap
+	 * @param beatmapId beatmap id
+	 * @param mode game mode (see {@link GameModes})
 	 * @param cls desired object class
 	 * @return
 	 * @throws IOException
 	 */
-	public <T extends OsuApiScore> List<T> getBeatmapTop(int beatmapId, int mode, Class<T> cls) throws IOException {
+	public <T extends OsuApiScore> List<T> getBeatmapTop(@BeatmapId int beatmapId, @GameMode int mode, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_SCORES, "b", String.valueOf(beatmapId), "m", String.valueOf(mode));
 		
 		for (int i = 0; i < jsonArray.size(); i++) {
@@ -216,7 +225,7 @@ public class Downloader {
 	}
 	
 	@CheckForNull
-	public <T extends OsuApiScore> T getScore(int userId, int beatmapId, int mode, Class<T> cls) throws IOException {
+	public <T extends OsuApiScore> T getScore(@UserId int userId, @BeatmapId int beatmapId, @GameMode int mode, Class<T> cls) throws IOException {
 		JsonElement jsonElement = get(GET_SCORES, "b", String.valueOf(beatmapId), "u", String.valueOf(userId), "m", String.valueOf(mode));
 		
 		if(jsonElement.isJsonNull())
@@ -235,26 +244,30 @@ public class Downloader {
 	}
 	
 	@CheckForNull
-	public <T extends OsuApiUser> T getUser(int userId, int mode, Class<T> cls) throws IOException {
+	public <T extends OsuApiUser> T getUser(@UserId int userId, @GameMode int mode, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_USER, "u", String.valueOf(userId), "m", String.valueOf(mode), "type", "id");
 		
 		if(jsonArray.size() == 0) {
 			return null;
 		}
-		return OsuApiUser.fromJsonObject((JsonObject) jsonArray.get(0), cls);
+		T user = OsuApiUser.fromJsonObject((JsonObject) jsonArray.get(0), cls, mode);
+		user.setMode(mode);
+		return user;
 	}
 
 	@CheckForNull
-	public <T extends OsuApiUser> T getUser(String username, int mode, Class<T> cls) throws IOException {
+	public <T extends OsuApiUser> T getUser(String username, @GameMode int mode, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_USER, "u", username, "m", String.valueOf(mode), "type", "string");
 		
 		if(jsonArray.size() == 0) {
 			return null;
 		}
-		return OsuApiUser.fromJsonObject((JsonObject) jsonArray.get(0), cls);
+		T user = OsuApiUser.fromJsonObject((JsonObject) jsonArray.get(0), cls, mode);
+		user.setMode(mode);
+		return user;
 	}
 	
-	public <T extends OsuApiScore> List<T> getUserRecent(int userid, int mode, Class<T> cls) throws IOException {
+	public <T extends OsuApiScore> List<T> getUserRecent(@UserId int userid, @GameMode int mode, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_USER_RECENT, "u", String.valueOf(userid), "m", String.valueOf(mode), "type", "id");
 		
 		return OsuApiScore.fromJsonArray(jsonArray, cls, mode);

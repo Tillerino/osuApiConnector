@@ -5,10 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.tillerino.osuApiModel.deserializer.CustomGson;
 import org.tillerino.osuApiModel.deserializer.Date;
 import org.tillerino.osuApiModel.deserializer.Skip;
+import org.tillerino.osuApiModel.types.BeatmapId;
+import org.tillerino.osuApiModel.types.BitwiseMods;
+import org.tillerino.osuApiModel.types.GameMode;
+import org.tillerino.osuApiModel.types.MillisSinceEpoch;
+import org.tillerino.osuApiModel.types.UserId;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -19,15 +26,29 @@ import com.google.gson.annotations.SerializedName;
 @Data
 public class OsuApiScore {
 	@SerializedName("beatmap_id")
+	@BeatmapId
+	@Getter(onMethod=@__(@BeatmapId))
+	@Setter(onParam=@__(@BeatmapId))
 	private int beatmapId;
+	
 	private long score;
-	private int maxcombo;
+	
+	@SerializedName("maxcombo")
+	private int maxCombo;
+	
 	private int count300;
 	private int count100;
 	private int count50;
-	private int countmiss;
-	private int countkatu;
-	private int countgeki;
+	
+	@SerializedName("countmiss")
+	private int countMiss;
+	
+	@SerializedName("countkatu")
+	private int countKatu;
+	
+	@SerializedName("countgeki")
+	private int countGeki;
+	
 	/**
 	 * 1 = maximum combo of map reached; 0 otherwise
 	 */
@@ -36,26 +57,41 @@ public class OsuApiScore {
 	 * bitwise flag representation of mods used. see reference
 	 */
 	@SerializedName("enabled_mods")
+	@BitwiseMods
+	@Getter(onMethod=@__(@BitwiseMods))
+	@Setter(onParam=@__(@BitwiseMods))
 	private long mods;
+	
 	@SerializedName("user_id")
-	private int userid;
+	@UserId
+	@Getter(onMethod=@__(@UserId))
+	@Setter(onParam=@__(@UserId))
+	private int userId;
+	
 	@Date
+	@MillisSinceEpoch
+	@Getter(onMethod=@__(@MillisSinceEpoch))
+	@Setter(onParam=@__(@MillisSinceEpoch))
 	private long date;
+	
 	private String rank;
 	private double pp;
 	
     static final Gson gson = CustomGson.wrap(false, OsuApiScore.class);
     
     @Skip
+	@GameMode
+	@Getter(onMethod=@__(@GameMode))
+	@Setter(onParam=@__(@GameMode))
     private int mode;
     
-    public static <T extends OsuApiScore> T fromJsonObject(JsonObject o, Class<T> cls, int mode) {
+    public static <T extends OsuApiScore> T fromJsonObject(JsonObject o, Class<T> cls, @GameMode int mode) {
     	T score = gson.fromJson(o, cls);
     	score.setMode(mode);
 		return score;
     }
 
-	public static <T extends OsuApiScore> List<T> fromJsonArray(JsonArray jsonArray, Class<T> cls, int mode) {
+	public static <T extends OsuApiScore> List<T> fromJsonArray(JsonArray jsonArray, Class<T> cls, @GameMode int mode) {
 		ArrayList<T> ret = new ArrayList<>();
 		for(JsonElement elem : jsonArray) {
 			ret.add(fromJsonObject((JsonObject) elem, cls, mode));
@@ -66,7 +102,7 @@ public class OsuApiScore {
 	public static final DecimalFormat percentage = new DecimalFormat("#.##%");
 
 	public double getAccuracy() {
-		return getAccuracy(count300, count100, count50, countmiss);
+		return getAccuracy(count300, count100, count50, countMiss);
 	}
 	
 	public static double getAccuracy(double count300, double count100, double count50, double countmiss) {
