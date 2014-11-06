@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import org.tillerino.osuApiModel.types.BitwiseMods;
 
@@ -158,7 +159,7 @@ public enum Mods {
 	
 	@CheckForNull
 	@SuppressFBWarnings(value = "TQ", justification = "producer")
-	public static @BitwiseMods Long fromShortNamesContinuous(String message) {
+	public static @BitwiseMods Long fromShortNamesContinuous(@Nonnull String message) {
 		long mods = 0;
 		for(int i = 0; i < message.length(); i+=2) {
 			try {

@@ -204,6 +204,16 @@ public class OsuApiBeatmap {
 		return totalLength;
 	}
 	
+	public static double calcCircleSize(double circleSize, @BitwiseMods long mods) {
+		if(HardRock.is(mods)) {
+			return circleSize * 1.3;
+		}
+		if(Easy.is(mods)) {
+			return circleSize / 2; 
+		}
+		return circleSize;
+	}
+	
 	public double getApproachRate(@BitwiseMods long mods) {
 		return calcAR(getApproachRate(), mods);
 	}
@@ -218,5 +228,9 @@ public class OsuApiBeatmap {
 	
 	public int getTotalLength(@BitwiseMods long mods) {
 		return calcTotalLength(getTotalLength(), mods);
+	}
+	
+	public double getCircleSize(@BitwiseMods long mods) {
+		return calcCircleSize(getCircleSize(), mods);
 	}
 }

@@ -3,8 +3,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.tillerino.osu</groupId>
 	<artifactId>osuApiConnector</artifactId>
-	<version>0.9</version>
+	<version>0.9.1</version>
 	<packaging>jar</packaging>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<lombok.version>1.14.8</lombok.version>
+	</properties>
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -36,6 +42,9 @@
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<configuration>
+							<sourcepath>target/generated-sources/delombok</sourcepath>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -52,8 +61,65 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok-maven-plugin</artifactId>
+				<version>${lombok.version}.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>delombok</goal>
+						</goals>
+						<phase>generate-sources</phase>
+						<configuration>
+							<sourceDirectory>src/main/java</sourceDirectory>
+							<addOutputDirectory>false</addOutputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>display-dependency-updates</goal>
+						</goals>
+						<phase>compile</phase>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>lombok-needs-tools-jar</id>
+			<activation>
+				<file>
+					<exists>${java.home}/../lib/tools.jar</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok-maven-plugin</artifactId>
+						<version>${lombok.version}.0</version>
+						<dependencies>
+							<dependency>
+								<groupId>sun.jdk</groupId>
+								<artifactId>tools</artifactId>
+								<version>1.6</version>
+								<scope>system</scope>
+								<systemPath>${java.home}/../lib/tools.jar</systemPath>
+							</dependency>
+						</dependencies>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	<dependencies>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -74,7 +140,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.14.2</version>
+			<version>${lombok.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
