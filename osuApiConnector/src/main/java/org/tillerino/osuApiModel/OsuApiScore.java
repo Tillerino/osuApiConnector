@@ -4,6 +4,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.CheckForNull;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -75,7 +77,10 @@ public class OsuApiScore {
 	private long date;
 	
 	private String rank;
-	private double pp;
+	
+	@Skip
+	@Getter(onMethod=@__(@CheckForNull))
+	private Double pp = null;
 	
     static final Gson gson = CustomGson.wrap(false, OsuApiScore.class);
     
@@ -88,6 +93,9 @@ public class OsuApiScore {
     public static <T extends OsuApiScore> T fromJsonObject(JsonObject o, Class<T> cls, @GameMode int mode) {
     	T score = gson.fromJson(o, cls);
     	score.setMode(mode);
+    	if(o.has("pp")) {
+    		score.setPp(o.getAsJsonPrimitive("pp").getAsDouble());
+    	}
 		return score;
     }
 

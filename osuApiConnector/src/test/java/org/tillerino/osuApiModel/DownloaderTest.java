@@ -92,4 +92,19 @@ public class DownloaderTest {
 		
 		downloader.getUser("Tillerino", GameModes.OSU, OsuApiUser.class);
 	}
+
+	@Test
+	public void testGetUserRecent() throws Exception {
+		Downloader downloader = new Downloader();
+		
+		downloader.getUserRecent(2070907, GameModes.OSU, OsuApiScore.class);
+	}
+
+	@Test
+	public void testGetScore() throws Exception {
+		Downloader downloader = new Downloader();
+		
+		final OsuApiScore score = downloader.getScore(2070907, 239265, GameModes.OSU, OsuApiScore.class);
+		assertNotNull(score.getPp());
+	}
 }
