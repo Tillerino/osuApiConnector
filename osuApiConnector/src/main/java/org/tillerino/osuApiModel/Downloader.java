@@ -161,32 +161,35 @@ public class Downloader {
 		httpCon.setRequestProperty("Accept-Encoding", "gzip");
 		httpCon.setConnectTimeout(5000);
 		httpCon.setReadTimeout(5000);
-		InputStream inputStream = httpCon.getInputStream();
 
 		try {
-			String contentEncoding = httpCon.getContentEncoding();
-			if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip")) {
-				inputStream = new GZIPInputStream(inputStream);
-			}
-
 			if (httpCon.getResponseCode() != 200) {
 				throw new IOException("response code " + httpCon.getResponseCode());
 			}
 
-			if (!httpCon.getContentType().contains("application/json;") || !httpCon.getContentType().contains("charset=UTF-8")) {
-				throw new IOException("unexpected content-type: "
-						+ httpCon.getContentType());
+			String contentEncoding = httpCon.getContentEncoding();
+			InputStream inputStream = httpCon.getInputStream();
+			try {
+				if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip")) {
+					inputStream = new GZIPInputStream(inputStream);
+				}
+	
+				if (!httpCon.getContentType().contains("application/json;") || !httpCon.getContentType().contains("charset=UTF-8")) {
+					throw new IOException("unexpected content-type: "
+							+ httpCon.getContentType());
+				}
+	
+				byte[] buf = new byte[1024];
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				for(int len; (len = inputStream.read(buf)) > 0;) {
+					baos.write(buf, 0, len);
+				}
+	
+				return baos.toString("UTF-8");
+			} finally {
+				inputStream.close();
 			}
-
-			byte[] buf = new byte[1024];
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			for(int len; (len = inputStream.read(buf)) > 0;) {
-				baos.write(buf, 0, len);
-			}
-
-			return baos.toString("UTF-8");
 		} finally {
-			inputStream.close();
 			httpCon.disconnect();
 		}
 	}

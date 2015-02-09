@@ -21,9 +21,12 @@ public class DownloaderTest {
 	
 	@Test
 	public void testNoValidKey() throws IOException {
-		String responseString = Downloader.downloadDirect(new Downloader("wrongKey").formURL(Downloader.GET_BEATMAPS));
-		
-		assertEquals(Downloader.INVALID_API_KEY, responseString);
+		try {
+			Downloader.downloadDirect(new Downloader("wrongKey").formURL(Downloader.GET_BEATMAPS));
+			fail("we expect an exception");
+		} catch (IOException e) {
+			assertTrue(e.getMessage().contains("401"));
+		}
 	}
 	
 	@Test(expected=IOException.class)
