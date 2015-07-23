@@ -236,7 +236,7 @@ public class Downloader {
 		
 		JsonArray jsonArray = (JsonArray) jsonElement;
 		
-		if(jsonArray.size() == 0) {
+		if(jsonArray.size() != 1) {
 			return null;
 		}
 		JsonObject jsonObject = (JsonObject) jsonArray.get(0);

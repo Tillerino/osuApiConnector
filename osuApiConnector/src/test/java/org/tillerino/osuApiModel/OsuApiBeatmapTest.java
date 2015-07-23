@@ -14,7 +14,7 @@ public class OsuApiBeatmapTest {
 	public void testRegression() throws IOException {
 		OsuApiBeatmap expected = new OsuApiBeatmap();
 
-		expected.setBeatmapId(75); expected.setSetId(1); expected.setArtist("Kenji Ninuma"); expected.setTitle("DISCO PRINCE"); expected.setVersion("Normal"); expected.setCreator("peppy"); expected.setSource(""); expected.setApproved(1); expected.setApprovedDate(1191692791000l); expected.setLastUpdate(1191692791000l); expected.setBpm(119.999); expected.setStarDifficulty(2.2918); expected.setOverallDifficulty(6); expected.setCircleSize(4); expected.setApproachRate(6); expected.setHealthDrain(6); expected.setHitLength(108); expected.setTotalLength(141); expected.setMode(0);
+		expected.setBeatmapId(75); expected.setSetId(1); expected.setArtist("Kenji Ninuma"); expected.setTitle("DISCO PRINCE"); expected.setVersion("Normal"); expected.setCreator("peppy"); expected.setSource(""); expected.setApproved(1); expected.setApprovedDate(1191692791000l); expected.setLastUpdate(1191692791000l); expected.setBpm(119.999); expected.setStarDifficulty(2.2917990684509277); expected.setOverallDifficulty(6); expected.setCircleSize(4); expected.setApproachRate(6); expected.setHealthDrain(6); expected.setHitLength(108); expected.setTotalLength(141); expected.setMode(0);
 
 		OsuApiBeatmap downloaded = new Downloader().getBeatmap(75, OsuApiBeatmap.class);
 
@@ -23,7 +23,6 @@ public class OsuApiBeatmapTest {
 
 	@Test
 	public void testCalcOd() throws Exception {
-		assertEquals(-6 - 2 / 3d, OsuApiBeatmap.calcOd(0, getMask(HalfTime, Easy)), 1E-15);
 		assertEquals(-2 - 1 / 6d, OsuApiBeatmap.calcOd(6, getMask(HalfTime, Easy)), 1E-15);
 		assertEquals(3 + 5 / 6d, OsuApiBeatmap.calcOd(7, getMask(HalfTime)), 1E-15);
 		assertEquals(8 + 1 / 3d, OsuApiBeatmap.calcOd(10, getMask(HalfTime, HardRock)), 1E-15);
