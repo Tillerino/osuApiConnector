@@ -123,8 +123,13 @@ public class Downloader {
 
 	public JsonElement get(String command, String... parameters)
 			throws IOException {
-		URL url = formURL(command, parameters);
-		String content = downloadDirect(url);
+		URL url = formURL(true, command, parameters);
+		String content;
+		try {
+			content = downloadDirect(url);
+		} catch (IOException e1) {
+			throw new IOException(e1.getMessage() + " for " + formURL(false, command, parameters), e1);
+		}
 		if(content.equals(INVALID_API_KEY))
 			throw new RuntimeException(INVALID_API_KEY);
 		try {
@@ -135,7 +140,7 @@ public class Downloader {
 		}
 	}
 
-	public URL formURL(String command, String... parameters)
+	public URL formURL(boolean addKey, String command, String... parameters)
 			throws IOException {
 		if (parameters.length % 2 != 0) {
 			throw new IllegalArgumentException("must provide key value pairs!");
@@ -143,8 +148,10 @@ public class Downloader {
 
 		StringBuilder builder = new StringBuilder(API_BASE_URL);
 		builder.append(command);
-		builder.append("?k=");
-		builder.append(key);
+		if(addKey) {
+			builder.append("?k=");
+			builder.append(key);
+		}
 		for (int i = 0; i < parameters.length; i += 2) {
 			builder.append("&");
 			builder.append(parameters[i]);
