@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -61,6 +62,28 @@ public class DownloaderTest {
 		Downloader downloader = new Downloader();
 		
 		downloader.getBeatmapTop(53, 0, OsuApiScore.class);
+	}
+
+	@Test
+	public void testGetBeatmapTopNomod() throws Exception {
+		Downloader downloader = new Downloader();
+		
+		final List<OsuApiScore> beatmapTop = downloader.getBeatmapTop(53, 0, OsuApiScore.class, 0);
+		
+		for (OsuApiScore osuApiScore : beatmapTop) {
+			assertEquals(0, osuApiScore.getMods());
+		}
+	}
+
+	@Test
+	public void testGetBeatmapTopDT() throws Exception {
+		Downloader downloader = new Downloader();
+		
+		final List<OsuApiScore> beatmapTop = downloader.getBeatmapTop(53, 0, OsuApiScore.class, 64);
+		
+		for (OsuApiScore osuApiScore : beatmapTop) {
+			assertEquals(64, osuApiScore.getMods());
+		}
 	}
 	
 	@Test

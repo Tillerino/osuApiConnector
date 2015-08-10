@@ -17,6 +17,7 @@ import lombok.SneakyThrows;
 
 import org.tillerino.osuApiModel.types.BeatmapId;
 import org.tillerino.osuApiModel.types.BeatmapSetId;
+import org.tillerino.osuApiModel.types.BitwiseMods;
 import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.UserId;
 
@@ -226,6 +227,25 @@ public class Downloader {
 	 */
 	public <T extends OsuApiScore> List<T> getBeatmapTop(@BeatmapId int beatmapId, @GameMode int mode, Class<T> cls) throws IOException {
 		JsonArray jsonArray = (JsonArray) get(GET_SCORES, "b", String.valueOf(beatmapId), "m", String.valueOf(mode));
+		
+		for (int i = 0; i < jsonArray.size(); i++) {
+			jsonArray.get(i).getAsJsonObject().addProperty("beatmap_id", beatmapId);
+		}
+		
+		return OsuApiScore.fromJsonArray(jsonArray, cls, mode);
+	}
+
+	/**
+	 * gets a the top scores for a beatmap
+	 * @param beatmapId beatmap id
+	 * @param mode game mode (see {@link GameModes})
+	 * @param cls desired object class
+	 * @param mods mods
+	 * @return
+	 * @throws IOException
+	 */
+	public <T extends OsuApiScore> List<T> getBeatmapTop(@BeatmapId int beatmapId, @GameMode int mode, Class<T> cls, @BitwiseMods long mods) throws IOException {
+		JsonArray jsonArray = (JsonArray) get(GET_SCORES, "b", String.valueOf(beatmapId), "m", String.valueOf(mode), "mods", String.valueOf(mods));
 		
 		for (int i = 0; i < jsonArray.size(); i++) {
 			jsonArray.get(i).getAsJsonObject().addProperty("beatmap_id", beatmapId);
