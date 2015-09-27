@@ -120,7 +120,38 @@ public class OsuApiBeatmap {
 	@Getter(onMethod=@__(@GameMode))
 	@Setter(onParam=@__(@GameMode))
 	private int mode;
-    
+	
+	/**
+	 * md5 hash of the beatmap
+	 */
+	@SerializedName("file_md5")
+	private String fileMd5;
+
+	/**
+	 * Number of times the beatmap was favourited. (americans: notice the ou!)
+	 */
+	@SerializedName("favourite_count")
+	private int favouriteCount;
+
+	/**
+	 * Number of times the beatmap was played
+	 */
+	@SerializedName("playcount")
+	private int playCount;
+
+	/**
+	 * Number of times the beatmap was passed, completed (the user didn't fail
+	 * or retry)
+	 */
+	@SerializedName("passcount")
+	private int passCount;
+
+	/**
+	 * The maximum combo an user can reach playing this beatmap.
+	 */
+	@SerializedName("max_combo")
+	private int maxCombo;
+
     static final Gson gson = CustomGson.wrap(false, OsuApiBeatmap.class);
     
     public static <T extends OsuApiBeatmap> T fromJsonObject(JsonObject o, Class<T> cls) {

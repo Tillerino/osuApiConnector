@@ -15,8 +15,14 @@ public class OsuApiBeatmapTest {
 		OsuApiBeatmap expected = new OsuApiBeatmap();
 
 		expected.setBeatmapId(75); expected.setSetId(1); expected.setArtist("Kenji Ninuma"); expected.setTitle("DISCO PRINCE"); expected.setVersion("Normal"); expected.setCreator("peppy"); expected.setSource(""); expected.setApproved(1); expected.setApprovedDate(1191692791000l); expected.setLastUpdate(1191692791000l); expected.setBpm(119.999); expected.setStarDifficulty(2.2917990684509277); expected.setOverallDifficulty(6); expected.setCircleSize(4); expected.setApproachRate(6); expected.setHealthDrain(6); expected.setHitLength(108); expected.setTotalLength(141); expected.setMode(0);
+		expected.setFileMd5("a5b99395a42bd55bc5eb1d2411cbdf8b");
+		expected.setMaxCombo(314);
 
 		OsuApiBeatmap downloaded = new Downloader().getBeatmap(75, OsuApiBeatmap.class);
+		
+		expected.setPlayCount(downloaded.getPlayCount());
+		expected.setPassCount(downloaded.getPassCount());
+		expected.setFavouriteCount(downloaded.getFavouriteCount());
 
 		assertEquals(expected, downloaded);
 	}
