@@ -94,7 +94,10 @@ public class OsuApiScore {
     	T score = gson.fromJson(o, cls);
     	score.setMode(mode);
     	if(o.has("pp")) {
-    		score.setPp(o.getAsJsonPrimitive("pp").getAsDouble());
+    		JsonElement ppMaybe = o.get("pp");
+    		if(!ppMaybe.isJsonNull()) {
+    			score.setPp(ppMaybe.getAsDouble());
+    		}
     	}
 		return score;
     }
