@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -24,6 +25,7 @@ import org.tillerino.osuApiModel.types.UserId;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -301,8 +303,11 @@ public class Downloader {
 	}
 	
 	public <T extends OsuApiScore> List<T> getUserRecent(@UserId int userid, @GameMode int mode, Class<T> cls) throws IOException {
-		JsonArray jsonArray = (JsonArray) get(GET_USER_RECENT, "u", String.valueOf(userid), "m", String.valueOf(mode), "type", "id");
+		JsonElement jsonElement = get(GET_USER_RECENT, "u", String.valueOf(userid), "m", String.valueOf(mode), "type", "id");
+		if (jsonElement instanceof JsonNull) {
+			return Collections.emptyList();
+		}
 		
-		return OsuApiScore.fromJsonArray(jsonArray, cls, mode);
+		return OsuApiScore.fromJsonArray((JsonArray) jsonElement, cls, mode);
 	}
 }
