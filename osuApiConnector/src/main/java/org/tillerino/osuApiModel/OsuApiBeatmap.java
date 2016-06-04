@@ -180,11 +180,15 @@ public class OsuApiBeatmap {
 	}
 
 	public static double odToMs(double od) {
-		return 80 - 6 * od;
+		return 79.5 - Math.ceil(6 * od);
 	}
 
+	/*
+	 * CARE: msToOd is the NOT inverse of odToMs. This is how the pp
+	 * system treats OD internally.
+	 */
 	public static double msToOd(double ms) {
-		return (80 - ms) / 6;
+		return (79.5 - ms) / 6;
 	}
 
 	public static double calcAR(double ar, @BitwiseMods long mods) {
@@ -214,7 +218,7 @@ public class OsuApiBeatmap {
 			od = msToOd(odToMs(od) * 2 / 3);
 		}
 		if(HalfTime.is(mods)) {
-			od = msToOd(odToMs(od) * 1.5);
+			od = msToOd(odToMs(od) * 4 / 3d);
 		}
 		return od;
 	}

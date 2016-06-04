@@ -29,13 +29,13 @@ public class OsuApiBeatmapTest {
 
 	@Test
 	public void testCalcOd() throws Exception {
-		assertEquals(-2 - 1 / 6d, OsuApiBeatmap.calcOd(6, getMask(HalfTime, Easy)), 1E-15);
-		assertEquals(3 + 5 / 6d, OsuApiBeatmap.calcOd(7, getMask(HalfTime)), 1E-15);
-		assertEquals(8 + 1 / 3d, OsuApiBeatmap.calcOd(10, getMask(HalfTime, HardRock)), 1E-15);
-		assertEquals(5.777777777, OsuApiBeatmap.calcOd(4, getMask(DoubleTime, Easy)), 1E-6);
-		assertEquals(9.777777777, OsuApiBeatmap.calcOd(8, getMask(DoubleTime)), 2E-6);
-		assertEquals(10.44444444, OsuApiBeatmap.calcOd(9, getMask(DoubleTime)), 2E-6);
-		assertEquals(11.111111111, OsuApiBeatmap.calcOd(10, getMask(DoubleTime, HardRock)), 1E-6);
+		assertEquals(-0.42, OsuApiBeatmap.calcOd(6, getMask(HalfTime, Easy)), 1E-2);
+		assertEquals(4.92, OsuApiBeatmap.calcOd(7, getMask(HalfTime)), 1E-2);
+		assertEquals(8.92, OsuApiBeatmap.calcOd(10, getMask(HalfTime, HardRock)), 1E-2);
+		assertEquals(5.75, OsuApiBeatmap.calcOd(4, getMask(DoubleTime, Easy)), 1E-2);
+		assertEquals(9.75, OsuApiBeatmap.calcOd(8, getMask(DoubleTime)), 2E-2);
+		assertEquals(10.42, OsuApiBeatmap.calcOd(9, getMask(DoubleTime)), 2E-2);
+		assertEquals(11.08, OsuApiBeatmap.calcOd(10, getMask(DoubleTime, HardRock)), 1E-2);
 	}
 
 	@Test
@@ -51,13 +51,13 @@ public class OsuApiBeatmapTest {
 
 	@Test
 	public void testOdToMs() throws Exception {
-		assertEquals(80, OsuApiBeatmap.odToMs(0), 1E-15);
-		assertEquals(50, OsuApiBeatmap.odToMs(5), 1E-15);
-		assertEquals(20, OsuApiBeatmap.odToMs(10), 1E-15);
-		assertEquals(14, OsuApiBeatmap.odToMs(11), 1E-15);
-		assertEquals(54, OsuApiBeatmap.odToMs(4 + 1 / 3d), 1E-15);
-		assertEquals(87.5, OsuApiBeatmap.odToMs(-1.25), 1E-15);
-		assertEquals(119, OsuApiBeatmap.odToMs(-6.5), 1E-15);
+		assertEquals(79.5, OsuApiBeatmap.odToMs(0), 1E-15);
+		assertEquals(52.5, OsuApiBeatmap.odToMs(4.34), 1E-15);
+		assertEquals(25.5, OsuApiBeatmap.odToMs(9), 1E-15);
+		assertEquals(24.5, OsuApiBeatmap.odToMs(9.1), 1E-15);
+		assertEquals(23.5, OsuApiBeatmap.odToMs(9.2), 1E-15);
+		assertEquals(23.5, OsuApiBeatmap.odToMs(9.3), 1E-15);
+		assertEquals(20.5, OsuApiBeatmap.odToMs(9.8), 1E-15);
 	}
 
 	@Test
@@ -85,12 +85,25 @@ public class OsuApiBeatmapTest {
 
 	@Test
 	public void testMsToOd() throws Exception {
-		assertEquals(0, OsuApiBeatmap.msToOd(80), 1E-15);
-		assertEquals(5, OsuApiBeatmap.msToOd(50), 1E-15);
-		assertEquals(10, OsuApiBeatmap.msToOd(20), 1E-15);
-		assertEquals(11, OsuApiBeatmap.msToOd(14), 1E-15);
-		assertEquals(4 + 1 / 3d, OsuApiBeatmap.msToOd(54), 1E-15);
-		assertEquals(-1.25, OsuApiBeatmap.msToOd(87.5), 1E-15);
-		assertEquals(-6.5, OsuApiBeatmap.msToOd(119), 1E-15);
+		assertEquals(0, OsuApiBeatmap.msToOd(79.5), 1E-15);
+		assertEquals(5, OsuApiBeatmap.msToOd(49.5), 1E-15);
+		assertEquals(10, OsuApiBeatmap.msToOd(19.5), 1E-15);
+		/*
+		 * this just kind of validates the formula, since non-integral od is not
+		 * bijective this way.
+		 */
+	}
+	
+	@Test
+	public void testOdToMsDT() throws Exception {
+		assertEquals(13.67, OsuApiBeatmap.odToMs(9.8) * 2 / 3, 1E-2);
+	}
+	
+	@Test
+	public void testODBestFriendsHRDT() throws Exception {
+		assertEquals(
+				10.9722222222222,
+				OsuApiBeatmap.calcOd(7,
+						Mods.getMask(Mods.DoubleTime, Mods.HardRock)), 1E-10);
 	}
 }
