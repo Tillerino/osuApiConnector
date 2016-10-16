@@ -95,6 +95,7 @@ public enum Mods {
 		return ret;
 	}
 	
+	@CheckForNull
 	public static Mods fromShortName(String shortName) {
 		prepare();
 		return shortNames.get(shortName);
