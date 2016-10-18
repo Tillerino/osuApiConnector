@@ -47,8 +47,15 @@ public class OsuApiBeatmap {
 	private String version;
 	private String creator;
 	private String source;
+
 	/**
-	 * 3 = qualified, 2 = approved, 1 = ranked, 0 = pending, -1 = WIP, -2 = graveyard
+	 * {@value #LOVED} = {@link #LOVED},
+	 * {@value #QUALIFIED} = {@link #QUALIFIED},
+	 * {@value #APPROVED} = {@link #APPROVED},
+	 * {@value #RANKED} = {@link #RANKED},
+	 * {@value #PENDING} = {@link #PENDING},
+	 * {@value #WIP} = {@link #WIP},
+	 * {@value #GRAVEYARD} = {@link #GRAVEYARD}.
 	 */
 	private int approved;
 	
@@ -153,6 +160,14 @@ public class OsuApiBeatmap {
 	private int maxCombo;
 
     static final Gson gson = CustomGson.wrap(false, OsuApiBeatmap.class);
+    
+    public static final int LOVED = 4;
+    public static final int QUALIFIED = 3;
+    public static final int APPROVED = 2;
+    public static final int RANKED = 1;
+    public static final int PENDING = 0;
+    public static final int WIP = -1;
+    public static final int GRAVEYARD = -2;
     
     public static <T extends OsuApiBeatmap> T fromJsonObject(JsonObject o, Class<T> cls) {
     	return gson.fromJson(o, cls);
