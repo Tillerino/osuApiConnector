@@ -34,6 +34,7 @@ import com.google.gson.stream.JsonWriter;
 public class CustomGson<T> implements JsonDeserializer<T> {
 	final private Gson delegate;
 	final Set<String> fields = new HashSet<>();
+	final Set<String> requiredFields = new HashSet<>();
 	final List<String> dateFields = new ArrayList<>();
 	final boolean throwOnPropertyNotCovered;
 	public static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forOffsetHours(8));
@@ -65,9 +66,6 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 		});
 		this.delegate = delegateBuilder.create();
 		for(; !baseCls.equals(Object.class); baseCls = baseCls.getSuperclass()) {
-			Set<String> fieldsFromThisClass = new HashSet<>();
-			Set<String> dateFieldsFromThisClass = new HashSet<>();
-			
 			Field[] originalFields = baseCls.getDeclaredFields();
 			for (int i = 0; i < originalFields.length; i++) {
 				Field field = originalFields[i];
@@ -85,15 +83,16 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 					name = field.getAnnotation(SerializedName.class).value();
 				}
 				
-				fieldsFromThisClass.add(name);
-				
+				fields.add(name);
+
+				if (!field.isAnnotationPresent(Optional.class)) {
+					requiredFields.add(name);
+				}
+
 				if(field.isAnnotationPresent(Date.class)) {
-					dateFieldsFromThisClass.add(name);
+					dateFields.add(name);
 				}
 			}
-			
-			fields.addAll(fieldsFromThisClass);
-			dateFields.addAll(dateFieldsFromThisClass);
 		}
 	}
 
@@ -103,7 +102,7 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 		if(!(json instanceof JsonObject))
 			throw new JsonParseException("expecting JsonObject, was " + json.getClass());
 		JsonObject o = (JsonObject) json;
-		for(String f : fields) {
+		for(String f : requiredFields) {
 			if(!o.has(f)) {
 				throw new RuntimeException("missing field " + f);
 			}

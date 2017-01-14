@@ -12,6 +12,7 @@ import lombok.Setter;
 
 import org.tillerino.osuApiModel.deserializer.CustomGson;
 import org.tillerino.osuApiModel.deserializer.Date;
+import org.tillerino.osuApiModel.deserializer.Optional;
 import org.tillerino.osuApiModel.deserializer.Skip;
 import org.tillerino.osuApiModel.types.BeatmapId;
 import org.tillerino.osuApiModel.types.BitwiseMods;
@@ -78,7 +79,7 @@ public class OsuApiScore {
 	
 	private String rank;
 	
-	@Skip
+	@Optional
 	@Getter(onMethod=@__(@CheckForNull))
 	private Double pp = null;
 	
@@ -93,12 +94,6 @@ public class OsuApiScore {
     public static <T extends OsuApiScore> T fromJsonObject(JsonObject o, Class<T> cls, @GameMode int mode) {
     	T score = gson.fromJson(o, cls);
     	score.setMode(mode);
-    	if(o.has("pp")) {
-    		JsonElement ppMaybe = o.get("pp");
-    		if(!ppMaybe.isJsonNull()) {
-    			score.setPp(ppMaybe.getAsDouble());
-    		}
-    	}
 		return score;
     }
 
