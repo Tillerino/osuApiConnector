@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.tillerino</groupId>
 	<artifactId>osu-api-connector</artifactId>
-	<version>0.9.8-SNAPSHOT</version>
+	<version>0.10.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>osu-api-connector</name>
 	<description>Object-oriented interaction with the osu! API.</description>
