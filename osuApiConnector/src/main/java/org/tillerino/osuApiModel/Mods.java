@@ -165,6 +165,9 @@ public enum Mods {
 		for(int i = 0; i < message.length(); i+=2) {
 			try {
 				Mods mod = fromShortName(message.substring(i, i + 2).toUpperCase());
+				if (mod == null) {
+					return null;
+				}
 				if(mod.isEffective()) {
 					if(mod == Nightcore) {
 						mods |= getMask(DoubleTime);
