@@ -170,10 +170,14 @@ public class Downloader {
 	}
 
 	public static String downloadDirect(URL url) throws IOException {
+		return downloadDirect(url, 5000);
+	}
+
+	public static String downloadDirect(URL url, int timeout) throws IOException {
 		HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
 		httpCon.setRequestProperty("Accept-Encoding", "gzip");
-		httpCon.setConnectTimeout(5000);
-		httpCon.setReadTimeout(5000);
+		httpCon.setConnectTimeout(timeout);
+		httpCon.setReadTimeout(timeout);
 
 		try {
 			if (httpCon.getResponseCode() != 200) {
