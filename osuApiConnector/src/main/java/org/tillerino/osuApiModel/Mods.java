@@ -19,7 +19,7 @@ public enum Mods {
 	 */
     NoFail(1, "NF", true),
     Easy(2, "EZ", true),
-    NoVideo(4, null, false),
+    TouchDevice(4, null, false),
     Hidden(8, "HD", true),
     HardRock(16, "HR", true),
     SuddenDeath(32, "SD", false),
