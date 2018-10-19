@@ -264,6 +264,17 @@ public class OsuApiBeatmap {
 		return circleSize;
 	}
 	
+	private double calcHpDrain(double healthDrain, @BitwiseMods long mods) {
+		if(Easy.is(mods)) {
+			healthDrain /= 2;
+		}
+		if(HardRock.is(mods)) {
+			healthDrain *= 1.4;
+		}
+		// adjusting for DT/HT is impossible and doesnt make a whole lot of sense so lets just ignore it
+		return healthDrain;
+	}
+
 	public double getApproachRate(@BitwiseMods long mods) {
 		return calcAR(getApproachRate(), mods);
 	}
@@ -282,5 +293,9 @@ public class OsuApiBeatmap {
 	
 	public double getCircleSize(@BitwiseMods long mods) {
 		return calcCircleSize(getCircleSize(), mods);
+	}
+
+	public double getHealthDrain(@BitwiseMods long mods) {
+		return calcHpDrain(getHealthDrain(), mods);
 	}
 }
