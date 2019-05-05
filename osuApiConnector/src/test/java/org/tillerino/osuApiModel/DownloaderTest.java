@@ -1,10 +1,7 @@
 package org.tillerino.osuApiModel;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URL;
@@ -140,5 +137,24 @@ public class DownloaderTest {
 		
 		final OsuApiScore score = downloader.getScore(2070907, 239265, GameModes.OSU, OsuApiScore.class);
 		assertNotNull(score.getPp());
+	}
+
+	@Test
+	public void testDiffStuff() throws Exception {
+		mockServer.when(new HttpRequest()
+				.withPath("/get_beatmaps")
+				.withQueryStringParameter("k", "key")
+				.withQueryStringParameter("b", "129891")
+				.withHeader(new Header(".*", ".*")))
+		.respond(new HttpResponse()
+				.withBody("[{\"beatmapset_id\":\"39804\",\"beatmap_id\":\"129891\",\"approved\":\"2\",\"total_length\":\"258\",\"hit_length\":\"226\",\"version\":\"FOUR DIMENSIONS\",\"file_md5\":\"da8aae79c8f3306b5d65ec951874a7fb\",\"diff_size\":\"4\",\"diff_overall\":\"8\",\"diff_approach\":\"9\",\"diff_drain\":\"6\",\"mode\":\"0\",\"approved_date\":\"2012-06-23 16:42:35\",\"last_update\":\"2012-06-23 03:19:39\",\"artist\":\"xi\",\"title\":\"FREEDOM DiVE\",\"creator\":\"Nakagawa-Kanon\",\"creator_id\":\"87065\",\"bpm\":\"222.22\",\"source\":\"BMS\",\"tags\":\"parousia onosakihito kirisaki_hayashi\",\"genre_id\":\"2\",\"language_id\":\"5\",\"favourite_count\":\"2761\",\"playcount\":\"5316179\",\"passcount\":\"208115\",\"max_combo\":\"2385\",\"diff_aim\":\"3.3820393085479736\",\"diff_speed\":\"3.7348108291625977\",\"diff_strain\":\"7.293235778808594\",\"difficultyrating\":\"7.293235778808594\"}]")
+				.withHeader("Content-type", "application/json;charset=UTF-8"));
+
+		Downloader downloader = new Downloader(new URL("http://localhost:" + mockServerRule.getPort() + "/"), "key");
+
+		assertThat(downloader.getBeatmap(129891, OsuApiBeatmap.class))
+				.hasFieldOrPropertyWithValue("diffAim", 3.3820393085479736)
+				.hasFieldOrPropertyWithValue("diffSpeed", 3.7348108291625977)
+				.hasFieldOrPropertyWithValue("diffStrain", 7.293235778808594);
 	}
 }
