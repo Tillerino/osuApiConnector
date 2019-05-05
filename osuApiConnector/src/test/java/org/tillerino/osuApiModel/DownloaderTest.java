@@ -153,8 +153,8 @@ public class DownloaderTest {
 		Downloader downloader = new Downloader(new URL("http://localhost:" + mockServerRule.getPort() + "/"), "key");
 
 		assertThat(downloader.getBeatmap(129891, OsuApiBeatmap.class))
-				.hasFieldOrPropertyWithValue("diffAim", 3.3820393085479736)
-				.hasFieldOrPropertyWithValue("diffSpeed", 3.7348108291625977)
-				.hasFieldOrPropertyWithValue("diffStrain", 7.293235778808594);
+				.hasFieldOrPropertyWithValue("aimDifficulty", 3.3820393085479736)
+				.hasFieldOrPropertyWithValue("speedDifficulty", 3.7348108291625977)
+				.hasFieldOrPropertyWithValue("strainDifficulty", 7.293235778808594);
 	}
 }
