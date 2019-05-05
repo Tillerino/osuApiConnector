@@ -39,7 +39,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<lombok.version>1.14.8</lombok.version>
+		<lombok.version>1.18.6</lombok.version>
 	</properties>
 	
 	<build>
@@ -79,8 +79,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -203,7 +203,7 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>${lombok.version}</version>
-			<scope>provided</scope>
+			<!-- use compile scope for @Generated annotation -->
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
@@ -214,6 +214,12 @@
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>annotations</artifactId>
 			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-netty</artifactId>
+			<version>5.5.1</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

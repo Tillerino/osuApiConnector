@@ -1,15 +1,40 @@
 package org.tillerino.osuApiModel;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import org.junit.Rule;
 import org.junit.Test;
-
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.junit.MockServerRule;
+import org.mockserver.model.Header;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
 
 public class DownloaderTest {
+	public MockServerRule mockServerRule = new MockServerRule(this);
+
+	private MockServerClient mockServer;
+
+	public final TestWatcher watcher = new TestWatcher() {
+		protected void failed(Throwable e, Description description) {
+			System.err.println(mockServer.retrieveLogMessages(null));
+		};
+	};
+
+	@Rule
+	public RuleChain rules = RuleChain.outerRule(mockServerRule).around(watcher);
+
 	@Test
 	public void testFormURL() throws IOException {
 		assertEquals(new URL("http://osu.ppy.sh/api/verb?k=key&parameter=value"), new Downloader("key").formURL(true, "verb", "parameter", "value"));
@@ -52,8 +77,17 @@ public class DownloaderTest {
 	
 	@Test
 	public void testBeatmapNotFound() throws IOException {
-		Downloader downloader = new Downloader();
-		
+		mockServer.when(new HttpRequest()
+				.withPath("/get_beatmaps")
+				.withQueryStringParameter("k", "key")
+				.withQueryStringParameter("b", "1")
+				.withHeader(new Header(".*", ".*")))
+		.respond(new HttpResponse()
+				.withBody("[ ]")
+				.withHeader("Content-type", "application/json;charset=UTF-8"));
+
+		Downloader downloader = new Downloader(new URL("http://localhost:" + mockServerRule.getPort() + "/"), "key");
+
 		assertNull(downloader.getBeatmap(1, OsuApiBeatmap.class));
 	}
 

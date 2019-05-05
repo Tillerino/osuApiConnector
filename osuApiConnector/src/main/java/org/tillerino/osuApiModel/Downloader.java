@@ -3,19 +3,17 @@ package org.tillerino.osuApiModel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import javax.annotation.CheckForNull;
-
-import lombok.SneakyThrows;
 
 import org.tillerino.osuApiModel.types.BeatmapId;
 import org.tillerino.osuApiModel.types.BeatmapSetId;
@@ -43,11 +41,22 @@ public class Downloader {
 	
 	public static final String GET_USER_RECENT = "get_user_recent";
 
+	private final String baseUrl;
+
 	private final String key;
 
 	public static final String INVALID_API_KEY = "Please provide a valid API key.";
 
 	private final static Pattern keyPattern = Pattern.compile("[0-9a-f]{40}");
+
+	public Downloader(URL baseUrl, String key) {
+		if (baseUrl != null) {
+			this.baseUrl = baseUrl.toString();
+		} else {
+			this.baseUrl = API_BASE_URL;
+		}
+		this.key = key;
+	}
 
 	/**
 	 * Constructs a Downloader with the given api key.
@@ -56,8 +65,7 @@ public class Downloader {
 	 *            valid api key
 	 */
 	public Downloader(String key) {
-		super();
-		this.key = key;
+		this(null, key);
 	}
 
 	/**
@@ -65,7 +73,6 @@ public class Downloader {
 	 * look for the system property "osuapikey" and then for a resource named
 	 * "osuapikey", either of which should only contain a valid api key.
 	 */
-	@SneakyThrows(UnsupportedEncodingException.class)
 	public Downloader() {
 		String systemKey = System.getProperty("osuapikey");
 
@@ -89,13 +96,15 @@ public class Downloader {
 				throw new RuntimeException(e);
 			}
 
-			String resourceKey = new String(buf, 0, len, "UTF-8");
+			String resourceKey = new String(buf, 0, len, StandardCharsets.UTF_8);
 			if(!keyPattern.matcher(resourceKey).matches()) {
 				throw new RuntimeException("resource osuapikey found, but looks invalid: " + resourceKey);
 			}
 
 			this.key = resourceKey;
 		}
+
+		this.baseUrl = API_BASE_URL;
 	}
 
 	@CheckForNull
@@ -152,7 +161,7 @@ public class Downloader {
 			throw new IllegalArgumentException("must provide key value pairs!");
 		}
 
-		StringBuilder builder = new StringBuilder(API_BASE_URL);
+		StringBuilder builder = new StringBuilder(baseUrl);
 		builder.append(command);
 		if(addKey) {
 			builder.append("?k=");
@@ -191,7 +200,7 @@ public class Downloader {
 					inputStream = new GZIPInputStream(inputStream);
 				}
 	
-				if (!httpCon.getContentType().contains("application/json;") || !httpCon.getContentType().contains("charset=UTF-8")) {
+				if (httpCon.getContentType() == null || !httpCon.getContentType().contains("application/json;") || !httpCon.getContentType().contains("charset=UTF-8")) {
 					throw new IOException("unexpected content-type: "
 							+ httpCon.getContentType());
 				}
