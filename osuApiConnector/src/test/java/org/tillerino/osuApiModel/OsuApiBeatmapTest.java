@@ -37,7 +37,6 @@ public class OsuApiBeatmapTest {
 		expected.setMaxCombo(314);
 		expected.setAimDifficulty(1.1959426403045654);
 		expected.setSpeedDifficulty(1.2059860229492188);
-		expected.setStrainDifficulty(2.4069502353668213);
 		expected.setTags("katamari");
 		expected.setCreatorId(2);
 		expected.setGenreId(2);

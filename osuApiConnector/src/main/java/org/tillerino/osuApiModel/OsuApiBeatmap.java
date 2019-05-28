@@ -98,9 +98,6 @@ public class OsuApiBeatmap {
     @SerializedName("diff_speed")
     private double speedDifficulty;
 
-    @SerializedName("diff_strain")
-    private double strainDifficulty;
-
     /**
      * Overall difficulty (OD)
      */
