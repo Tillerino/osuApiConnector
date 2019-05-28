@@ -84,6 +84,18 @@ public class OsuApiBeatmap {
 	@SerializedName("difficultyrating")
 	private double starDifficulty;
 	
+	/**
+     * Star difficulty (aim)
+     */
+	
+	@SerializedName("diff_aim")
+	private double starDifficultyAim;
+	/**
+     * Star difficulty (speed)
+     */
+	@SerializedName("diff_speed")
+	private double starDifficultySpeed;
+	
     /**
      * Overall difficulty (OD)
      */
