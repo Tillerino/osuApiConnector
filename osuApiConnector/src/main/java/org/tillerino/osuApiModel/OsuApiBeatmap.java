@@ -47,6 +47,14 @@ public class OsuApiBeatmap {
 	private String version;
 	private String creator;
 	private String source;
+    private String tags;
+
+    @SerializedName("creator_id")
+    private int creatorId;
+    @SerializedName("genre_id")
+    private int genreId;
+    @SerializedName("language_id")
+    private int languageId;
 
 	/**
 	 * {@value #LOVED} = {@link #LOVED},
@@ -83,7 +91,13 @@ public class OsuApiBeatmap {
      */
 	@SerializedName("difficultyrating")
 	private double starDifficulty;
-	
+
+    @SerializedName("diff_aim")
+    private double aimDifficulty;
+
+    @SerializedName("diff_speed")
+    private double speedDifficulty;
+
     /**
      * Overall difficulty (OD)
      */

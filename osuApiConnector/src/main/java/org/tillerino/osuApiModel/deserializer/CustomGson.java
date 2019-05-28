@@ -37,7 +37,7 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 	final Set<String> requiredFields = new HashSet<>();
 	final List<String> dateFields = new ArrayList<>();
 	final boolean throwOnPropertyNotCovered;
-	public static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forOffsetHours(8));
+	public static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.UTC);
 
 	private CustomGson(Class<?> baseCls, final Class<?> instanceClass, boolean throwOnPropertyNotCovered) {
 		super();
