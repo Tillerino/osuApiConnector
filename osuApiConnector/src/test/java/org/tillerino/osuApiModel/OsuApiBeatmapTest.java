@@ -14,7 +14,7 @@ public class OsuApiBeatmapTest {
 	public void testRegression() throws IOException {
 		OsuApiBeatmap expected = new OsuApiBeatmap();
 
-		expected.setBeatmapId(75); expected.setSetId(1); expected.setArtist("Kenji Ninuma"); expected.setTitle("DISCO PRINCE"); expected.setVersion("Normal"); expected.setCreator("peppy"); expected.setSource(""); expected.setApproved(1); expected.setApprovedDate(1191692791000l); expected.setLastUpdate(1191692791000l); expected.setBpm(119.999); expected.setStarDifficulty(2.291992664337158); expected.setOverallDifficulty(6); expected.setCircleSize(4); expected.setApproachRate(6); expected.setHealthDrain(6); expected.setHitLength(109); expected.setTotalLength(142); expected.setMode(0);
+		expected.setBeatmapId(75); expected.setSetId(1); expected.setArtist("Kenji Ninuma"); expected.setTitle("DISCO PRINCE"); expected.setVersion("Normal"); expected.setCreator("peppy"); expected.setSource(""); expected.setApproved(1); expected.setApprovedDate(1191663991000L); expected.setLastUpdate(1191663991000L); expected.setBpm(119.999); expected.setStarDifficulty(2.4069502353668213); expected.setStarDifficultyAim(1.1959426403045654); expected.setStarDifficultySpeed(1.2059860229492188); expected.setOverallDifficulty(6); expected.setCircleSize(4); expected.setApproachRate(6); expected.setHealthDrain(6); expected.setHitLength(109); expected.setTotalLength(142); expected.setMode(0);
 		expected.setFileMd5("a5b99395a42bd55bc5eb1d2411cbdf8b");
 		expected.setMaxCombo(314);
 
