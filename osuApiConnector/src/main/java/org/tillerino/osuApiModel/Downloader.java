@@ -75,10 +75,13 @@ public class Downloader {
 	 */
 	public Downloader() {
 		String systemKey = System.getProperty("osuapikey");
+		if (systemKey == null) {
+			systemKey = System.getenv("OSUAPIKEY");
+		}
 
 		if(systemKey != null) {
 			if(!keyPattern.matcher(systemKey).matches()) {
-				throw new RuntimeException("system property osuapikey found, but looks invalid: " + systemKey);
+				throw new RuntimeException("system property osuapikey found, but looks invalid");
 			}
 			this.key = systemKey;
 		} else {
