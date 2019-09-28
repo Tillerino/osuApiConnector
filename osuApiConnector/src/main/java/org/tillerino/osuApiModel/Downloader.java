@@ -120,6 +120,16 @@ public class Downloader {
 		return OsuApiBeatmap.fromJsonObject((JsonObject) array.get(0), cls);
 	}
 
+	@CheckForNull
+	public <T extends OsuApiBeatmap> T getBeatmap(@BeatmapId int beatmapId, long mods, Class<T> cls) throws IOException {
+		JsonArray array = (JsonArray) get(GET_BEATMAPS, "b",
+				String.valueOf(beatmapId), "mods", String.valueOf(mods));
+		if(array.size() == 0) {
+			return null;
+		}
+		return OsuApiBeatmap.fromJsonObject((JsonObject) array.get(0), cls);
+	}
+
 	/**
 	 * 
 	 * @param beatmapsetId
@@ -203,7 +213,9 @@ public class Downloader {
 					inputStream = new GZIPInputStream(inputStream);
 				}
 	
-				if (httpCon.getContentType() == null || !httpCon.getContentType().contains("application/json;") || !httpCon.getContentType().contains("charset=UTF-8")) {
+				if (httpCon.getContentType() == null
+						|| !httpCon.getContentType().contains("application/json;")
+						|| !httpCon.getContentType().toLowerCase().contains("charset=utf-8")) {
 					throw new IOException("unexpected content-type: "
 							+ httpCon.getContentType());
 				}

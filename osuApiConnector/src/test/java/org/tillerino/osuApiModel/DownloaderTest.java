@@ -2,14 +2,18 @@ package org.tillerino.osuApiModel;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.mockserver.client.MockServerClient;
@@ -18,19 +22,31 @@ import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 
+import com.google.common.net.MediaType;
+
 public class DownloaderTest {
-	public MockServerRule mockServerRule = new MockServerRule(this);
+	@ClassRule
+	public static final MockServerRule mockServerRule = new MockServerRule(DownloaderTest.class);
 
-	private MockServerClient mockServer;
+	private static MockServerClient mockServer;
 
+	@Rule
 	public final TestWatcher watcher = new TestWatcher() {
 		protected void failed(Throwable e, Description description) {
 			System.err.println(mockServer.retrieveLogMessages(null));
-		};
+		}
+
+		protected void finished(Description description) {
+			mockServer.reset();
+		}
 	};
 
-	@Rule
-	public RuleChain rules = RuleChain.outerRule(mockServerRule).around(watcher);
+	private Downloader downloader;
+
+	@Before
+	public void setUp() throws Exception {
+		downloader = new Downloader(new URL("http://localhost:" + mockServerRule.getPort() + "/"), "key");
+	}
 
 	@Test
 	public void testFormURL() throws IOException {
@@ -82,8 +98,6 @@ public class DownloaderTest {
 		.respond(new HttpResponse()
 				.withBody("[ ]")
 				.withHeader("Content-type", "application/json;charset=UTF-8"));
-
-		Downloader downloader = new Downloader(new URL("http://localhost:" + mockServerRule.getPort() + "/"), "key");
 
 		assertNull(downloader.getBeatmap(1, OsuApiBeatmap.class));
 	}
@@ -150,10 +164,25 @@ public class DownloaderTest {
 				.withBody("[{\"beatmapset_id\":\"39804\",\"beatmap_id\":\"129891\",\"approved\":\"2\",\"total_length\":\"258\",\"hit_length\":\"226\",\"version\":\"FOUR DIMENSIONS\",\"file_md5\":\"da8aae79c8f3306b5d65ec951874a7fb\",\"diff_size\":\"4\",\"diff_overall\":\"8\",\"diff_approach\":\"9\",\"diff_drain\":\"6\",\"mode\":\"0\",\"approved_date\":\"2012-06-23 16:42:35\",\"last_update\":\"2012-06-23 03:19:39\",\"artist\":\"xi\",\"title\":\"FREEDOM DiVE\",\"creator\":\"Nakagawa-Kanon\",\"creator_id\":\"87065\",\"bpm\":\"222.22\",\"source\":\"BMS\",\"tags\":\"parousia onosakihito kirisaki_hayashi\",\"genre_id\":\"2\",\"language_id\":\"5\",\"favourite_count\":\"2761\",\"playcount\":\"5316179\",\"passcount\":\"208115\",\"max_combo\":\"2385\",\"diff_aim\":\"3.3820393085479736\",\"diff_speed\":\"3.7348108291625977\",\"difficultyrating\":\"7.293235778808594\"}]")
 				.withHeader("Content-type", "application/json;charset=UTF-8"));
 
-		Downloader downloader = new Downloader(new URL("http://localhost:" + mockServerRule.getPort() + "/"), "key");
-
 		assertThat(downloader.getBeatmap(129891, OsuApiBeatmap.class))
 				.hasFieldOrPropertyWithValue("aimDifficulty", 3.3820393085479736)
 				.hasFieldOrPropertyWithValue("speedDifficulty", 3.7348108291625977);
+	}
+
+	@Test
+	public void modsSpecificBeatmapCanBePulled() throws Exception {
+		mockServer.when(request("/get_beatmaps")
+				.withQueryStringParameter("k", "key")
+				.withQueryStringParameter("b", "123")
+				.withQueryStringParameter("mods", "16"))
+			// we can return a missing beatmap, we just want to know that the query is right
+			.respond(response().withBody("[]", MediaType.JSON_UTF_8));
+
+		assertThat(downloader.getBeatmap(123, 16, OsuApiBeatmap.class)).isNull();
+
+		mockServer.verify(request("/get_beatmaps")
+				.withQueryStringParameter("k", "key")
+				.withQueryStringParameter("b", "123")
+				.withQueryStringParameter("mods", "16"));
 	}
 }
