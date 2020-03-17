@@ -29,7 +29,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 public class Downloader {
-	public static final String API_BASE_URL = "http://osu.ppy.sh/api/";
+	public static final String API_BASE_URL = "https://osu.ppy.sh/api/";
 
 	public static final String GET_BEATMAPS = "get_beatmaps";
 	
