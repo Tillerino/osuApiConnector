@@ -25,7 +25,7 @@ public class OsuApiBeatmapTest {
 		expected.setApprovedDate(1191692791000L);
 		expected.setLastUpdate(1191692791000L);
 		expected.setBpm(119.999);
-		expected.setStarDifficulty(2.4069502353668213);
+		expected.setStarDifficulty(2.40729);
 		expected.setOverallDifficulty(6);
 		expected.setCircleSize(4);
 		expected.setApproachRate(6);
@@ -35,8 +35,8 @@ public class OsuApiBeatmapTest {
 		expected.setMode(0);
 		expected.setFileMd5("a5b99395a42bd55bc5eb1d2411cbdf8b");
 		expected.setMaxCombo(314);
-		expected.setAimDifficulty(1.1959426403045654);
-		expected.setSpeedDifficulty(1.2059860229492188);
+		expected.setAimDifficulty(1.19593);
+		expected.setSpeedDifficulty(1.20622);
 		expected.setTags("katamari");
 		expected.setCreatorId(2);
 		expected.setGenreId(2);
