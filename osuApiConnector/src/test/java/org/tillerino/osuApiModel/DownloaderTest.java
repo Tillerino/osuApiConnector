@@ -50,7 +50,7 @@ public class DownloaderTest {
 
 	@Test
 	public void testFormURL() throws IOException {
-		assertEquals(new URL("http://osu.ppy.sh/api/verb?k=key&parameter=value"), new Downloader("key").formURL(true, "verb", "parameter", "value"));
+		assertEquals(new URL("https://osu.ppy.sh/api/verb?k=key&parameter=value"), new Downloader("key").formURL(true, "verb", "parameter", "value"));
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
