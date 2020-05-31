@@ -1,6 +1,7 @@
 package org.tillerino.osuApiModel;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -68,14 +69,11 @@ public class DownloaderTest {
 		}
 	}
 	
-	@Test(expected=IOException.class)
+	@Test
 	public void testInvalidVerb() throws IOException {
-		try {
-			Downloader.downloadDirect(new Downloader("wrongKey").formURL(true, "verb"));
-		} catch (IOException e) {
-			assertTrue(e.getMessage().contains("response code 301"));
-			throw e;
-		}
+		assertThatThrownBy(() -> Downloader.downloadDirect(new Downloader("wrongKey").formURL(true, "verb")))
+			.isInstanceOf(IOException.class)
+			.hasMessageContaining("response code 302");
 	}
 	
 	/**
