@@ -110,7 +110,7 @@
 						</goals>
 						<configuration>
 							<sourcepath>target/generated-sources/delombok</sourcepath>
-							<failOnError>false</failOnError>
+							<source>1.8</source>
 						</configuration>
 					</execution>
 				</executions>
