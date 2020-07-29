@@ -4,15 +4,14 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
@@ -37,7 +36,7 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 	final Set<String> requiredFields = new HashSet<>();
 	final List<String> dateFields = new ArrayList<>();
 	final boolean throwOnPropertyNotCovered;
-	public static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.UTC);
+	public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC);
 
 	private CustomGson(Class<?> baseCls, final Class<?> instanceClass, boolean throwOnPropertyNotCovered) {
 		super();
@@ -119,7 +118,7 @@ public class CustomGson<T> implements JsonDeserializer<T> {
 		for(String dateField : dateFields) {
 			JsonElement jsonElement = o.get(dateField);
 			if(!jsonElement.isJsonNull()) {
-				o.addProperty(dateField, CustomGson.dateTimeFormatter.parseDateTime(jsonElement.getAsString()).getMillis());
+				o.addProperty(dateField, ZonedDateTime.parse(jsonElement.getAsString(), dateTimeFormatter).toInstant().toEpochMilli());
 			}
 		}
 

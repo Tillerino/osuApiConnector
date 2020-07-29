@@ -2,7 +2,11 @@ package org.tillerino.osuApiModel;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -10,45 +14,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.mockserver.client.MockServerClient;
-import org.mockserver.junit.MockServerRule;
 import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 
 import com.google.common.net.MediaType;
 
-public class DownloaderTest {
-	@ClassRule
-	public static final MockServerRule mockServerRule = new MockServerRule(DownloaderTest.class);
-
-	private static MockServerClient mockServer;
-
-	@Rule
-	public final TestWatcher watcher = new TestWatcher() {
-		protected void failed(Throwable e, Description description) {
-			System.err.println(mockServer.retrieveLogMessages(null));
-		}
-
-		protected void finished(Description description) {
-			mockServer.reset();
-		}
-	};
-
-	private Downloader downloader;
-
-	@Before
-	public void setUp() throws Exception {
-		downloader = new Downloader(new URL("http://localhost:" + mockServerRule.getPort() + "/"), "key");
-	}
-
+public class DownloaderTest extends AbstractMockServerTest {
 	@Test
 	public void testFormURL() throws IOException {
 		assertEquals(new URL("https://osu.ppy.sh/api/verb?k=key&parameter=value"), new Downloader("key").formURL(true, "verb", "parameter", "value"));

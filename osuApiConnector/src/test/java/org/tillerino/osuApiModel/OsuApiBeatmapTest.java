@@ -7,11 +7,14 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
+
+import com.google.common.net.MediaType;
 
 
-public class OsuApiBeatmapTest {
-	@Test
-	public void testRegression() throws IOException {
+public class OsuApiBeatmapTest extends AbstractMockServerTest {
+	private OsuApiBeatmap expectedDiscoPrince() {
 		OsuApiBeatmap expected = new OsuApiBeatmap();
 
 		expected.setBeatmapId(75);
@@ -41,10 +44,35 @@ public class OsuApiBeatmapTest {
 		expected.setCreatorId(2);
 		expected.setGenreId(2);
 		expected.setLanguageId(3);
+		return expected;
+	}
+
+	@Test
+	public void testRegressionDownload() throws IOException {
+		OsuApiBeatmap expected = expectedDiscoPrince();
 
 		OsuApiBeatmap downloaded = new Downloader().getBeatmap(75, OsuApiBeatmap.class);
 		assertNotNull(downloaded);
 		
+		expected.setPlayCount(downloaded.getPlayCount());
+		expected.setPassCount(downloaded.getPassCount());
+		expected.setFavouriteCount(downloaded.getFavouriteCount());
+
+		assertEquals(expected, downloaded);
+	}
+
+	@Test
+	public void testRegressionFixed() throws IOException {
+		String s = "[{\"beatmapset_id\":\"1\",\"beatmap_id\":\"75\",\"approved\":\"1\",\"total_length\":\"142\",\"hit_length\":\"109\",\"version\":\"Normal\",\"file_md5\":\"a5b99395a42bd55bc5eb1d2411cbdf8b\",\"diff_size\":\"4\",\"diff_overall\":\"6\",\"diff_approach\":\"6\",\"diff_drain\":\"6\",\"mode\":\"0\",\"count_normal\":\"160\",\"count_slider\":\"0\",\"count_spinner\":\"0\",\"submit_date\":\"2007-10-06 17:46:31\",\"approved_date\":\"2007-10-06 17:46:31\",\"last_update\":\"2007-10-06 17:46:31\",\"artist\":\"Kenji Ninuma\",\"artist_unicode\":null,\"title\":\"DISCO PRINCE\",\"title_unicode\":null,\"creator\":\"peppy\",\"creator_id\":\"2\",\"bpm\":\"119.999\",\"source\":\"\",\"tags\":\"katamari\",\"genre_id\":\"2\",\"language_id\":\"3\",\"favourite_count\":\"676\",\"rating\":\"8.17677\",\"storyboard\":\"0\",\"video\":\"0\",\"download_unavailable\":\"0\",\"audio_unavailable\":\"0\",\"playcount\":\"425777\",\"passcount\":\"52511\",\"packs\":\"S1,T23,T61\",\"max_combo\":\"314\",\"diff_aim\":\"1.19593\",\"diff_speed\":\"1.20622\",\"difficultyrating\":\"2.40729\"}]";
+		mockServer.when(HttpRequest.request("/get_beatmaps")
+				.withQueryStringParameter("k", "key")
+				.withQueryStringParameter("b", "75"))
+			.respond(HttpResponse.response().withBody(s, MediaType.JSON_UTF_8));
+		OsuApiBeatmap expected = expectedDiscoPrince();
+
+		OsuApiBeatmap downloaded = downloader.getBeatmap(75, OsuApiBeatmap.class);
+		assertNotNull(downloaded);
+
 		expected.setPlayCount(downloaded.getPlayCount());
 		expected.setPassCount(downloaded.getPassCount());
 		expected.setFavouriteCount(downloaded.getFavouriteCount());
