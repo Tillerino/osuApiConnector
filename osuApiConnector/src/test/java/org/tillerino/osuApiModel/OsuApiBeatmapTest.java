@@ -28,7 +28,7 @@ public class OsuApiBeatmapTest extends AbstractMockServerTest {
 		expected.setApprovedDate(1191692791000L);
 		expected.setLastUpdate(1191692791000L);
 		expected.setBpm(119.999);
-		expected.setStarDifficulty(2.40729);
+		expected.setStarDifficulty(2.55606);
 		expected.setOverallDifficulty(6);
 		expected.setCircleSize(4);
 		expected.setApproachRate(6);
@@ -38,8 +38,8 @@ public class OsuApiBeatmapTest extends AbstractMockServerTest {
 		expected.setMode(0);
 		expected.setFileMd5("a5b99395a42bd55bc5eb1d2411cbdf8b");
 		expected.setMaxCombo(314);
-		expected.setAimDifficulty(1.19593);
-		expected.setSpeedDifficulty(1.20622);
+		expected.setAimDifficulty(1.28033);
+		expected.setSpeedDifficulty(1.17561);
 		expected.setTags("katamari");
 		expected.setCreatorId(2);
 		expected.setGenreId(2);
@@ -63,7 +63,8 @@ public class OsuApiBeatmapTest extends AbstractMockServerTest {
 
 	@Test
 	public void testRegressionFixed() throws IOException {
-		String s = "[{\"beatmapset_id\":\"1\",\"beatmap_id\":\"75\",\"approved\":\"1\",\"total_length\":\"142\",\"hit_length\":\"109\",\"version\":\"Normal\",\"file_md5\":\"a5b99395a42bd55bc5eb1d2411cbdf8b\",\"diff_size\":\"4\",\"diff_overall\":\"6\",\"diff_approach\":\"6\",\"diff_drain\":\"6\",\"mode\":\"0\",\"count_normal\":\"160\",\"count_slider\":\"0\",\"count_spinner\":\"0\",\"submit_date\":\"2007-10-06 17:46:31\",\"approved_date\":\"2007-10-06 17:46:31\",\"last_update\":\"2007-10-06 17:46:31\",\"artist\":\"Kenji Ninuma\",\"artist_unicode\":null,\"title\":\"DISCO PRINCE\",\"title_unicode\":null,\"creator\":\"peppy\",\"creator_id\":\"2\",\"bpm\":\"119.999\",\"source\":\"\",\"tags\":\"katamari\",\"genre_id\":\"2\",\"language_id\":\"3\",\"favourite_count\":\"676\",\"rating\":\"8.17677\",\"storyboard\":\"0\",\"video\":\"0\",\"download_unavailable\":\"0\",\"audio_unavailable\":\"0\",\"playcount\":\"425777\",\"passcount\":\"52511\",\"packs\":\"S1,T23,T61\",\"max_combo\":\"314\",\"diff_aim\":\"1.19593\",\"diff_speed\":\"1.20622\",\"difficultyrating\":\"2.40729\"}]";
+		// https://osu.ppy.sh/api/get_beatmaps?k=...&b=75
+		String s = "[{\"beatmapset_id\":\"1\",\"beatmap_id\":\"75\",\"approved\":\"1\",\"total_length\":\"142\",\"hit_length\":\"109\",\"version\":\"Normal\",\"file_md5\":\"a5b99395a42bd55bc5eb1d2411cbdf8b\",\"diff_size\":\"4\",\"diff_overall\":\"6\",\"diff_approach\":\"6\",\"diff_drain\":\"6\",\"mode\":\"0\",\"count_normal\":\"160\",\"count_slider\":\"30\",\"count_spinner\":\"4\",\"submit_date\":\"2007-10-06 17:46:31\",\"approved_date\":\"2007-10-06 17:46:31\",\"last_update\":\"2007-10-06 17:46:31\",\"artist\":\"Kenji Ninuma\",\"artist_unicode\":null,\"title\":\"DISCO PRINCE\",\"title_unicode\":null,\"creator\":\"peppy\",\"creator_id\":\"2\",\"bpm\":\"119.999\",\"source\":\"\",\"tags\":\"katamari\",\"genre_id\":\"2\",\"language_id\":\"3\",\"favourite_count\":\"1041\",\"rating\":\"8.24649\",\"storyboard\":\"0\",\"video\":\"0\",\"download_unavailable\":\"0\",\"audio_unavailable\":\"0\",\"playcount\":\"559067\",\"passcount\":\"67037\",\"packs\":\"S1,T23,T61\",\"max_combo\":\"314\",\"diff_aim\":\"1.28033\",\"diff_speed\":\"1.17561\",\"difficultyrating\":\"2.55606\"}]";
 		mockServer.when(HttpRequest.request("/get_beatmaps")
 				.withQueryStringParameter("k", "key")
 				.withQueryStringParameter("b", "75"))

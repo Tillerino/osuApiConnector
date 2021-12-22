@@ -6,29 +6,25 @@ import java.util.List;
 
 import javax.annotation.CheckForNull;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.tillerino.osuApiModel.deserializer.CustomGson;
-import org.tillerino.osuApiModel.deserializer.Date;
-import org.tillerino.osuApiModel.deserializer.Optional;
-import org.tillerino.osuApiModel.deserializer.Skip;
+import org.tillerino.osuApiModel.deserializer.DateToLong;
 import org.tillerino.osuApiModel.types.BeatmapId;
 import org.tillerino.osuApiModel.types.BitwiseMods;
 import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.MillisSinceEpoch;
 import org.tillerino.osuApiModel.types.UserId;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.SerializedName;
-
 @Data
 public class OsuApiScore {
-	@SerializedName("beatmap_id")
+	@JsonProperty("beatmap_id")
 	@BeatmapId
 	@Getter(onMethod=@__(@BeatmapId))
 	@Setter(onParam=@__(@BeatmapId))
@@ -36,20 +32,20 @@ public class OsuApiScore {
 	
 	private long score;
 	
-	@SerializedName("maxcombo")
+	@JsonProperty("maxcombo")
 	private int maxCombo;
 	
 	private int count300;
 	private int count100;
 	private int count50;
 	
-	@SerializedName("countmiss")
+	@JsonProperty("countmiss")
 	private int countMiss;
 	
-	@SerializedName("countkatu")
+	@JsonProperty("countkatu")
 	private int countKatu;
 	
-	@SerializedName("countgeki")
+	@JsonProperty("countgeki")
 	private int countGeki;
 	
 	/**
@@ -59,19 +55,19 @@ public class OsuApiScore {
 	/**
 	 * bitwise flag representation of mods used. see reference
 	 */
-	@SerializedName("enabled_mods")
+	@JsonProperty("enabled_mods")
 	@BitwiseMods
 	@Getter(onMethod=@__(@BitwiseMods))
 	@Setter(onParam=@__(@BitwiseMods))
 	private long mods;
 	
-	@SerializedName("user_id")
+	@JsonProperty("user_id")
 	@UserId
 	@Getter(onMethod=@__(@UserId))
 	@Setter(onParam=@__(@UserId))
 	private int userId;
-	
-	@Date
+
+	@JsonDeserialize(using = DateToLong.class)
 	@MillisSinceEpoch
 	@Getter(onMethod=@__(@MillisSinceEpoch))
 	@Setter(onParam=@__(@MillisSinceEpoch))
@@ -79,28 +75,24 @@ public class OsuApiScore {
 	
 	private String rank;
 	
-	@Optional
 	@Getter(onMethod=@__(@CheckForNull))
 	private Double pp = null;
 	
-    static final Gson gson = CustomGson.wrap(false, OsuApiScore.class);
-    
-    @Skip
-	@GameMode
+    @GameMode
 	@Getter(onMethod=@__(@GameMode))
 	@Setter(onParam=@__(@GameMode))
     private int mode;
     
-    public static <T extends OsuApiScore> T fromJsonObject(JsonObject o, Class<T> cls, @GameMode int mode) {
-    	T score = gson.fromJson(o, cls);
+    public static <T extends OsuApiScore> T fromJsonObject(JsonNode o, Class<T> cls, @GameMode int mode) throws JsonProcessingException {
+    	T score = Downloader.JACKSON.treeToValue(o, cls);
     	score.setMode(mode);
 		return score;
     }
 
-	public static <T extends OsuApiScore> List<T> fromJsonArray(JsonArray jsonArray, Class<T> cls, @GameMode int mode) {
+	public static <T extends OsuApiScore> List<T> fromJsonArray(ArrayNode jsonArray, Class<T> cls, @GameMode int mode) throws JsonProcessingException {
 		ArrayList<T> ret = new ArrayList<>();
-		for(JsonElement elem : jsonArray) {
-			ret.add(fromJsonObject((JsonObject) elem, cls, mode));
+		for(JsonNode elem : jsonArray) {
+			ret.add(fromJsonObject(elem, cls, mode));
 		}
 		return ret;
 	}

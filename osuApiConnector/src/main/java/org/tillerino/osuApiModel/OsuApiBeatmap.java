@@ -7,39 +7,32 @@ import static org.tillerino.osuApiModel.Mods.HalfTime;
 import static org.tillerino.osuApiModel.Mods.HardRock;
 import static org.tillerino.osuApiModel.Mods.Nightcore;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.tillerino.osuApiModel.deserializer.CustomGson;
-import org.tillerino.osuApiModel.deserializer.Date;
+import org.tillerino.osuApiModel.deserializer.DateToLong;
 import org.tillerino.osuApiModel.types.BeatmapId;
 import org.tillerino.osuApiModel.types.BeatmapSetId;
 import org.tillerino.osuApiModel.types.BitwiseMods;
 import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.MillisSinceEpoch;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 public class OsuApiBeatmap {
 	@BeatmapId
 	@Getter(onMethod=@__(@BeatmapId))
 	@Setter(onParam=@__(@BeatmapId))
-	@SerializedName("beatmap_id")
+	@JsonProperty("beatmap_id")
 	private int beatmapId;
 	
 	@BeatmapSetId
 	@Getter(onMethod=@__(@BeatmapSetId))
 	@Setter(onParam=@__(@BeatmapSetId))
-	@SerializedName("beatmapset_id")
+	@JsonProperty("beatmapset_id")
 	private int setId;
 	
 	private String artist;
@@ -49,11 +42,11 @@ public class OsuApiBeatmap {
 	private String source;
     private String tags;
 
-    @SerializedName("creator_id")
+    @JsonProperty("creator_id")
     private int creatorId;
-    @SerializedName("genre_id")
+    @JsonProperty("genre_id")
     private int genreId;
-    @SerializedName("language_id")
+    @JsonProperty("language_id")
     private int languageId;
 
 	/**
@@ -70,18 +63,18 @@ public class OsuApiBeatmap {
 	/**
 	 * may be null if not ranked
 	 */
-	@Date
+	@JsonDeserialize(using = DateToLong.class)
 	@MillisSinceEpoch
 	@Getter(onMethod=@__(@MillisSinceEpoch))
 	@Setter(onParam=@__(@MillisSinceEpoch))
-	@SerializedName("approved_date")
+	@JsonProperty("approved_date")
 	private Long approvedDate;
-	
-	@Date
+
+	@JsonDeserialize(using = DateToLong.class)
 	@MillisSinceEpoch
 	@Getter(onMethod=@__(@MillisSinceEpoch))
 	@Setter(onParam=@__(@MillisSinceEpoch))
-	@SerializedName("last_update")
+	@JsonProperty("last_update")
 	private long lastUpdate;
 	
 	private double bpm; // can this be non-integral?
@@ -89,49 +82,49 @@ public class OsuApiBeatmap {
 	/**
      * Star difficulty
      */
-	@SerializedName("difficultyrating")
+	@JsonProperty("difficultyrating")
 	private double starDifficulty;
 
-    @SerializedName("diff_aim")
+    @JsonProperty("diff_aim")
     private double aimDifficulty;
 
-    @SerializedName("diff_speed")
+    @JsonProperty("diff_speed")
     private double speedDifficulty;
 
     /**
      * Overall difficulty (OD)
      */
-	@SerializedName("diff_overall")
+	@JsonProperty("diff_overall")
 	private double overallDifficulty;
 	
     /**
      * Circle size value (CS)
      */
-	@SerializedName("diff_size")
+	@JsonProperty("diff_size")
 	private double circleSize;
 	
     /**
      * Approach Rate (AR)
      */
-	@SerializedName("diff_approach")
+	@JsonProperty("diff_approach")
 	private double approachRate;
 	
     /**
      * Healthdrain (HP)
      */
-	@SerializedName("diff_drain")
+	@JsonProperty("diff_drain")
 	private double healthDrain;
 	
     /**
      * seconds from first note to last note not including breaks
      */
-	@SerializedName("hit_length")
+	@JsonProperty("hit_length")
 	private int hitLength;
 	
 	/**
      * seconds from first note to last note including breaks
      */
-	@SerializedName("total_length")
+	@JsonProperty("total_length")
 	private int totalLength; 
 	
 	/**
@@ -145,36 +138,34 @@ public class OsuApiBeatmap {
 	/**
 	 * md5 hash of the beatmap
 	 */
-	@SerializedName("file_md5")
+	@JsonProperty("file_md5")
 	private String fileMd5;
 
 	/**
 	 * Number of times the beatmap was favourited. (americans: notice the ou!)
 	 */
-	@SerializedName("favourite_count")
+	@JsonProperty("favourite_count")
 	private int favouriteCount;
 
 	/**
 	 * Number of times the beatmap was played
 	 */
-	@SerializedName("playcount")
+	@JsonProperty("playcount")
 	private int playCount;
 
 	/**
 	 * Number of times the beatmap was passed, completed (the user didn't fail
 	 * or retry)
 	 */
-	@SerializedName("passcount")
+	@JsonProperty("passcount")
 	private int passCount;
 
 	/**
 	 * The maximum combo an user can reach playing this beatmap.
 	 */
-	@SerializedName("max_combo")
+	@JsonProperty("max_combo")
 	private int maxCombo;
 
-    static final Gson gson = CustomGson.wrap(false, OsuApiBeatmap.class);
-    
     public static final int LOVED = 4;
     public static final int QUALIFIED = 3;
     public static final int APPROVED = 2;
@@ -182,18 +173,6 @@ public class OsuApiBeatmap {
     public static final int PENDING = 0;
     public static final int WIP = -1;
     public static final int GRAVEYARD = -2;
-    
-    public static <T extends OsuApiBeatmap> T fromJsonObject(JsonObject o, Class<T> cls) {
-    	return gson.fromJson(o, cls);
-    }
-
-	public static <T extends OsuApiBeatmap> List<T> fromJsonArray(JsonArray jsonArray, Class<T> cls) {
-		ArrayList<T> ret = new ArrayList<>();
-		for(JsonElement elem : jsonArray) {
-			ret.add(fromJsonObject((JsonObject) elem, cls));
-		}
-		return ret;
-	}
 
 	public static double arToMs(double ar) {
 		if(ar < 5)

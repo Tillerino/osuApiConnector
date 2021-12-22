@@ -1,27 +1,24 @@
 package org.tillerino.osuApiModel;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.tillerino.osuApiModel.deserializer.CustomGson;
-import org.tillerino.osuApiModel.deserializer.Skip;
 import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.UserId;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.SerializedName;
-
 @Data
 public class OsuApiUser {
-	@SerializedName("user_id")
+	@JsonProperty("user_id")
 	@UserId
 	@Getter(onMethod=@__(@UserId))
 	@Setter(onParam=@__(@UserId))
 	private int userId;
 	
-	@SerializedName("username")
+	@JsonProperty("username")
 	private String userName;
 	/**
 	 * Total amount for all ranked and approved beatmaps played
@@ -38,26 +35,26 @@ public class OsuApiUser {
 	/**
 	 * Only counts ranked and approved beatmaps
 	 */
-	@SerializedName("playcount")
+	@JsonProperty("playcount")
 	private int playCount;
 	/**
 	 * Counts the best individual score on each ranked and approved beatmaps
 	 */
-	@SerializedName("ranked_score")
+	@JsonProperty("ranked_score")
 	private long rankedScore;
 	
 	/**
 	 * Counts every score on ranked and approved beatmaps
 	 */
-	@SerializedName("total_score")
+	@JsonProperty("total_score")
 	private long totalScore;
 	
-	@SerializedName("pp_rank")
+	@JsonProperty("pp_rank")
 	private int rank;
 	
 	private double level;
 	
-	@SerializedName("pp_raw")
+	@JsonProperty("pp_raw")
 	private double pp;
 	
 	private double accuracy;
@@ -65,33 +62,30 @@ public class OsuApiUser {
 	/**
 	 * Counts for SS/S/A ranks on maps
 	 */
-	@SerializedName("count_rank_ss")
+	@JsonProperty("count_rank_ss")
 	private int countSS;
 	
 	/**
 	 * Counts for SS/S/A ranks on maps
 	 */
-	@SerializedName("count_rank_s")
+	@JsonProperty("count_rank_s")
 	private int countS;
 	
 	/**
 	 * Counts for SS/S/A ranks on maps
 	 */
-	@SerializedName("count_rank_a")
+	@JsonProperty("count_rank_a")
 	private int countA;
 	
 	private String country;
 	
-	@Skip
 	@GameMode
 	@Getter(onMethod=@__(@GameMode))
 	@Setter(onParam=@__(@GameMode))
 	private int mode;
 	
-	static final Gson gson = CustomGson.wrap(false, OsuApiUser.class);
-    
-    public static <T extends OsuApiUser> T fromJsonObject(JsonObject o, Class<T> cls, @GameMode int mode) {
-    	T user = gson.fromJson(o, cls);
+    public static <T extends OsuApiUser> T fromJsonObject(JsonNode o, Class<T> cls, @GameMode int mode) throws JsonProcessingException {
+    	T user = Downloader.JACKSON.treeToValue(o, cls);
     	user.setMode(mode);
 		return user;
     }
