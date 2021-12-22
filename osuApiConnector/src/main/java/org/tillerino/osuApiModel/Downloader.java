@@ -309,7 +309,7 @@ public class Downloader {
 		}
 
 		// there might be more than one score. We get the
-		ObjectNode jsonObject = toObject(jsonArray.get(1));
+		ObjectNode jsonObject = toObject(jsonArray.get(0));
 
 		jsonObject.put("beatmap_id", beatmapId);
 
