@@ -6,15 +6,6 @@ import java.util.List;
 
 import javax.annotation.CheckForNull;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
 import org.tillerino.osuApiModel.deserializer.DateToLong;
 import org.tillerino.osuApiModel.types.BeatmapId;
 import org.tillerino.osuApiModel.types.BitwiseMods;
@@ -22,12 +13,18 @@ import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.MillisSinceEpoch;
 import org.tillerino.osuApiModel.types.UserId;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
+import lombok.Data;
+
 @Data
 public class OsuApiScore {
 	@JsonProperty("beatmap_id")
 	@BeatmapId
-	@Getter(onMethod=@__(@BeatmapId))
-	@Setter(onParam=@__(@BeatmapId))
 	private int beatmapId;
 	
 	private long score;
@@ -57,30 +54,22 @@ public class OsuApiScore {
 	 */
 	@JsonProperty("enabled_mods")
 	@BitwiseMods
-	@Getter(onMethod=@__(@BitwiseMods))
-	@Setter(onParam=@__(@BitwiseMods))
 	private long mods;
 	
 	@JsonProperty("user_id")
 	@UserId
-	@Getter(onMethod=@__(@UserId))
-	@Setter(onParam=@__(@UserId))
 	private int userId;
 
 	@JsonDeserialize(using = DateToLong.class)
 	@MillisSinceEpoch
-	@Getter(onMethod=@__(@MillisSinceEpoch))
-	@Setter(onParam=@__(@MillisSinceEpoch))
 	private long date;
 	
 	private String rank;
 	
-	@Getter(onMethod=@__(@CheckForNull))
+	@CheckForNull
 	private Double pp = null;
 	
     @GameMode
-	@Getter(onMethod=@__(@GameMode))
-	@Setter(onParam=@__(@GameMode))
     private int mode;
     
     public static <T extends OsuApiScore> T fromJsonObject(JsonNode o, Class<T> cls, @GameMode int mode) throws JsonProcessingException {

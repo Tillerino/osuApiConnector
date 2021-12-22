@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.UserId;
@@ -14,8 +12,6 @@ import org.tillerino.osuApiModel.types.UserId;
 public class OsuApiUser {
 	@JsonProperty("user_id")
 	@UserId
-	@Getter(onMethod=@__(@UserId))
-	@Setter(onParam=@__(@UserId))
 	private int userId;
 	
 	@JsonProperty("username")
@@ -80,8 +76,6 @@ public class OsuApiUser {
 	private String country;
 	
 	@GameMode
-	@Getter(onMethod=@__(@GameMode))
-	@Setter(onParam=@__(@GameMode))
 	private int mode;
 	
     public static <T extends OsuApiUser> T fromJsonObject(JsonNode o, Class<T> cls, @GameMode int mode) throws JsonProcessingException {

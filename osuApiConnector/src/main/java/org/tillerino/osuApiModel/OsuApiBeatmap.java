@@ -7,11 +7,6 @@ import static org.tillerino.osuApiModel.Mods.HalfTime;
 import static org.tillerino.osuApiModel.Mods.HardRock;
 import static org.tillerino.osuApiModel.Mods.Nightcore;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
 import org.tillerino.osuApiModel.deserializer.DateToLong;
 import org.tillerino.osuApiModel.types.BeatmapId;
 import org.tillerino.osuApiModel.types.BeatmapSetId;
@@ -20,18 +15,17 @@ import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.MillisSinceEpoch;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import lombok.Data;
 
 @Data
 public class OsuApiBeatmap {
 	@BeatmapId
-	@Getter(onMethod=@__(@BeatmapId))
-	@Setter(onParam=@__(@BeatmapId))
 	@JsonProperty("beatmap_id")
 	private int beatmapId;
 	
 	@BeatmapSetId
-	@Getter(onMethod=@__(@BeatmapSetId))
-	@Setter(onParam=@__(@BeatmapSetId))
 	@JsonProperty("beatmapset_id")
 	private int setId;
 	
@@ -65,15 +59,11 @@ public class OsuApiBeatmap {
 	 */
 	@JsonDeserialize(using = DateToLong.class)
 	@MillisSinceEpoch
-	@Getter(onMethod=@__(@MillisSinceEpoch))
-	@Setter(onParam=@__(@MillisSinceEpoch))
 	@JsonProperty("approved_date")
 	private Long approvedDate;
 
 	@JsonDeserialize(using = DateToLong.class)
 	@MillisSinceEpoch
-	@Getter(onMethod=@__(@MillisSinceEpoch))
-	@Setter(onParam=@__(@MillisSinceEpoch))
 	@JsonProperty("last_update")
 	private long lastUpdate;
 	
@@ -131,8 +121,6 @@ public class OsuApiBeatmap {
      * mode (0 = osu!, 1 = Taiko, 2 = CtB, 3 = osu!mania)
      */
 	@GameMode
-	@Getter(onMethod=@__(@GameMode))
-	@Setter(onParam=@__(@GameMode))
 	private int mode;
 	
 	/**
