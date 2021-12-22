@@ -30,6 +30,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class Downloader {
 	public static final String API_BASE_URL = "https://osu.ppy.sh/api/";
 
@@ -359,5 +361,41 @@ public class Downloader {
 			throw new RuntimeException("Expected array");
 		}
 		return (ObjectNode) n;
+	}
+
+	/**
+	 * Creates a test implementation that loads API objects from the classpath.
+	 *
+	 * @param cls A class from the class loader that can load the resources. If you
+	 *            are creating this in a unit test where the resources are in the
+	 *            same module, getClass() will probably work just fine.
+	 * @return an implementation of {@link Downloader} which will load API objects
+	 *         from the class path. It will load from /osuv1api/|path||?query| where
+	 *         path is the path of the HTTP request and query is the query string
+	 *         excluding the API key.
+	 */
+	public static Downloader createTestDownloader(Class<?> cls) {
+		class FakeDownloader extends Downloader {
+			public FakeDownloader() {
+				super("0123456789012345678901234567890123456789");
+			}
+
+			@SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "false positive")
+			@Override
+			public JsonNode get(String command, String... parameters) throws IOException {
+				URL url = formURL(false, command, parameters);
+				if (url.toString().contains("&") && !url.toString().contains("?")) {
+					url = new URL(url.toString().replaceFirst("&", "?"));
+				}
+				String relPath = "/osuv1api" + url.getPath() + URLEncoder.encode("?" + url.getQuery(), "UTF-8");
+				try (InputStream in = cls.getResourceAsStream(relPath)) {
+					if (in == null) {
+						throw new RuntimeException("Resource not found: " + relPath + " " + url);
+					}
+					return JACKSON.readTree(in);
+				}
+			}
+		}
+		return new FakeDownloader();
 	}
 }
