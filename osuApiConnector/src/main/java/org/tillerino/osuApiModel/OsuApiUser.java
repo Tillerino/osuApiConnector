@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 
 import org.tillerino.osuApiModel.types.GameMode;
+import org.tillerino.osuApiModel.types.OsuName;
 import org.tillerino.osuApiModel.types.UserId;
 
 @Data
@@ -13,8 +14,9 @@ public class OsuApiUser {
 	@JsonProperty("user_id")
 	@UserId
 	private int userId;
-	
+
 	@JsonProperty("username")
+	@OsuName
 	private String userName;
 	/**
 	 * Total amount for all ranked and approved beatmaps played
