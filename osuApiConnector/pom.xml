@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.tillerino</groupId>
 	<artifactId>osu-api-connector</artifactId>
-	<version>0.16.2</version>
+	<version>0.16.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>osu-api-connector</name>
 	<description>Object-oriented interaction with the osu! API.</description>
@@ -24,7 +24,7 @@
 		<developerConnection>scm:git:git@github.com:Tillerino/osuApiConnector.git</developerConnection>
 		<connection>scm:git:git@github.com:Tillerino/osuApiConnector.git</connection>
 		<url>https://github.com/Tillerino/osuApiConnector</url>
-		<tag>v0.16.2</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<distributionManagement>
 		<snapshotRepository>
