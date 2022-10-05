@@ -40,7 +40,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<lombok.version>1.18.20</lombok.version>
-		<jackson.version>2.13.1</jackson.version>
+		<jackson.version>2.13.2.1</jackson.version>
 	</properties>
 	
 	<build>
