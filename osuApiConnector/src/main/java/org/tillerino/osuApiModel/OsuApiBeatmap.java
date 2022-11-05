@@ -44,13 +44,15 @@ public class OsuApiBeatmap {
     private int languageId;
 
 	/**
-	 * {@value #LOVED} = {@link #LOVED},
-	 * {@value #QUALIFIED} = {@link #QUALIFIED},
-	 * {@value #APPROVED} = {@link #APPROVED},
-	 * {@value #RANKED} = {@link #RANKED},
-	 * {@value #PENDING} = {@link #PENDING},
-	 * {@value #WIP} = {@link #WIP},
-	 * {@value #GRAVEYARD} = {@link #GRAVEYARD}.
+	 * <ul>
+	 * <li>{@value #GRAVEYARD} = {@link #GRAVEYARD}</li>
+	 * <li>{@value #WIP} = {@link #WIP}</li>
+	 * <li>{@value #PENDING} = {@link #PENDING}</li>
+	 * <li>{@value #RANKED} = {@link #RANKED}</li>
+	 * <li>{@value #APPROVED} = {@link #APPROVED}</li>
+	 * <li>{@value #QUALIFIED} = {@link #QUALIFIED}</li>
+	 * <li>{@value #LOVED} = {@link #LOVED}</li>
+	 * </ul>
 	 */
 	private int approved;
 	
@@ -154,13 +156,13 @@ public class OsuApiBeatmap {
 	@JsonProperty("max_combo")
 	private int maxCombo;
 
-    public static final int LOVED = 4;
-    public static final int QUALIFIED = 3;
-    public static final int APPROVED = 2;
+	public static final int GRAVEYARD = -2;
+	public static final int WIP = -1;
+	public static final int PENDING = 0;
     public static final int RANKED = 1;
-    public static final int PENDING = 0;
-    public static final int WIP = -1;
-    public static final int GRAVEYARD = -2;
+    public static final int APPROVED = 2;
+    public static final int QUALIFIED = 3;
+    public static final int LOVED = 4;
 
 	public static double arToMs(double ar) {
 		if(ar < 5)
