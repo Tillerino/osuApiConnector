@@ -42,6 +42,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <lombok.version>1.18.38</lombok.version>
     <jackson.version>2.13.1</jackson.version>
+    <mapstruct.version>1.6.3</mapstruct.version>
   </properties>
   <dependencies>
     <dependency>
@@ -60,6 +61,11 @@
       <artifactId>lombok</artifactId>
       <version>${lombok.version}</version>
       <!-- use compile scope for @Generated annotation -->
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${mapstruct.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
@@ -126,6 +132,18 @@
           <target>1.8</target>
           <testSource>1.8</testSource>
           <testTarget>1.8</testTarget>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+            <path>
+              <groupId>org.mapstruct</groupId>
+              <artifactId>mapstruct-processor</artifactId>
+              <version>${mapstruct.version}</version>
+            </path>
+          </annotationProcessorPaths>
         </configuration>
       </plugin>
       <plugin>
