@@ -12,15 +12,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.CheckForNull;
@@ -33,9 +29,10 @@ import org.tillerino.osuApiModel.types.BeatmapId;
 import org.tillerino.osuApiModel.types.BeatmapSetId;
 import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.UserId;
+import org.tillerino.osuApiModel.v2.TokenHelper.TokenCache;
 
 public class DownloaderV2 {
-    public static final String API_BASE_URL = "https://osu.ppy.sh/api/v2/";
+    public static final URI PROD_API_BASE = URI.create("https://osu.ppy.sh/api/v2/");
 
     public static final String GET_BEATMAPS = "beatmaps/{beatmap}";
 
@@ -59,28 +56,22 @@ public class DownloaderV2 {
 
     private final String baseUrl;
 
-    private final String key;
+    private final TokenCache tokenCache;
 
     public static final String INVALID_API_KEY = "Please provide a valid API key.";
 
-    private static final Pattern keyPattern = Pattern.compile("[A-Za-z0-9]{40}");
-
-    public DownloaderV2(URL baseUrl, String key) {
-        if (baseUrl != null) {
-            this.baseUrl = baseUrl.toString();
-        } else {
-            this.baseUrl = API_BASE_URL;
-        }
-        this.key = key;
+    public DownloaderV2(URI baseUrl, TokenCache tokenCache) {
+        this.baseUrl = baseUrl.toString();
+        this.tokenCache = tokenCache;
     }
 
     /**
      * Constructs a Downloader with the given api key.
      *
-     * @param key valid api key
+     * @param tokenCache the token cache to use
      */
-    public DownloaderV2(String key) {
-        this(null, key);
+    public DownloaderV2(TokenCache tokenCache) {
+        this(PROD_API_BASE, tokenCache);
     }
 
     /**
@@ -89,40 +80,7 @@ public class DownloaderV2 {
      * "osuapikey", either of which should only contain a valid api key.
      */
     public DownloaderV2() {
-        String systemKey = System.getProperty("osuapikey");
-        if (systemKey == null) {
-            systemKey = System.getenv("OSUAPIKEY");
-        }
-
-        if (systemKey != null) {
-            if (!keyPattern.matcher(systemKey).matches()) {
-                throw new RuntimeException("system property osuapikey found, but looks invalid");
-            }
-            this.key = systemKey;
-        } else {
-            InputStream is = DownloaderV2.class.getClassLoader().getResourceAsStream("osuapikey");
-
-            if (is == null) {
-                throw new RuntimeException("No api key found.");
-            }
-
-            byte[] buf = new byte[40];
-            int len;
-            try {
-                len = is.read(buf);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            String resourceKey = new String(buf, 0, len, StandardCharsets.UTF_8);
-            if (!keyPattern.matcher(resourceKey).matches()) {
-                throw new RuntimeException("resource osuapikey found, but looks invalid: " + resourceKey);
-            }
-
-            this.key = resourceKey;
-        }
-
-        this.baseUrl = API_BASE_URL;
+        this(TokenCache.inMemory(TokenHelper.Credentials.fromEnvOrProps()));
     }
 
     private JsonNode getBeatmapData(int beatmapId, String... parameters) throws IOException {
@@ -163,17 +121,16 @@ public class DownloaderV2 {
     }
 
     public JsonNode get(String command, String method, String... parameters) throws IOException {
-        URL url = formURL(command, parameters);
-        TokenHelper tokenHelper = new TokenHelper();
-        String token = tokenHelper.getToken(key);
+        URI uri = formURI(command, parameters);
+        String token = tokenCache.getToken();
         String content;
 
         try {
-            content = downloadDirect(url, token, method);
+            content = downloadDirect(uri, token, method);
         } catch (SocketTimeoutException e) {
             throw e;
         } catch (IOException e1) {
-            throw new IOException(e1.getMessage() + " for " + formURL(command, parameters), e1);
+            throw new IOException(e1.getMessage() + " for " + formURI(command, parameters), e1);
         }
         if (content.equals(INVALID_API_KEY)) throw new RuntimeException(INVALID_API_KEY);
         try {
@@ -185,7 +142,7 @@ public class DownloaderV2 {
         }
     }
 
-    public URL formURL(String command, String... parameters) throws IOException {
+    public URI formURI(String command, String... parameters) throws IOException {
         if (parameters.length % 2 != 0) {
             throw new IllegalArgumentException("must provide key value pairs!");
         }
@@ -201,19 +158,19 @@ public class DownloaderV2 {
                 }
                 builder.append(parameters[i]);
                 builder.append("=");
-                builder.append(URLEncoder.encode(parameters[i + 1], "UTF-8"));
+                builder.append(URLEncoder.encode(parameters[i + 1], StandardCharsets.UTF_8));
             }
         }
 
-        return new URL(builder.toString());
+        return URI.create(builder.toString());
     }
 
-    public static String downloadDirect(URL url, String key, String method) throws IOException {
-        return downloadDirect(url, 5000, key, method);
+    public static String downloadDirect(URI uri, String key, String method) throws IOException {
+        return downloadDirect(uri, 5000, key, method);
     }
 
-    public static String downloadDirect(URL url, int timeout, String key, String method) throws IOException {
-        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
+    public static String downloadDirect(URI uri, int timeout, String key, String method) throws IOException {
+        HttpURLConnection httpCon = (HttpURLConnection) uri.toURL().openConnection();
 
         httpCon.setRequestMethod(method);
         httpCon.setRequestProperty("Authorization", "Bearer " + key);
@@ -308,7 +265,7 @@ public class DownloaderV2 {
     }
 
     /**
-     * gets a the top scores for a beatmap
+     * gets the top scores for a beatmap
      *
      * @param beatmapId beatmap id
      * @param mode      game mode (see {@link GameModes})
@@ -456,20 +413,20 @@ public class DownloaderV2 {
     public static DownloaderV2 createTestDownloader(Class<?> cls) {
         class FakeDownloader extends DownloaderV2 {
             public FakeDownloader() {
-                super("0123456789012345678901234567890123456789");
+                super(TokenHelper.TokenCache.constant("fake"));
             }
 
             @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "false positive")
             @Override
             public JsonNode get(String command, String method, String... parameters) throws IOException {
-                URL url = formURL(command, parameters);
-                if (url.toString().contains("&") && !url.toString().contains("?")) {
-                    url = new URL(url.toString().replaceFirst("&", "?"));
+                URI uri = formURI(command, parameters);
+                if (uri.toString().contains("&") && !uri.toString().contains("?")) {
+                    uri = URI.create(uri.toString().replaceFirst("&", "?"));
                 }
-                String relPath = "/osuv1api" + url.getPath() + URLEncoder.encode("?" + url.getQuery(), "UTF-8");
+                String relPath = "/osuv1api" + uri.getPath() + URLEncoder.encode("?" + uri.getQuery(), "UTF-8");
                 try (InputStream in = cls.getResourceAsStream(relPath)) {
                     if (in == null) {
-                        throw new RuntimeException("Resource not found: " + relPath + " " + url);
+                        throw new RuntimeException("Resource not found: " + relPath + " " + uri);
                     }
                     return JACKSON.readTree(in);
                 }

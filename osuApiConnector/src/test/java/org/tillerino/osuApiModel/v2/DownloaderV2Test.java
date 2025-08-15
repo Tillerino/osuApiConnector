@@ -12,7 +12,7 @@ import static org.mockserver.model.HttpResponse.response;
 
 import com.google.common.net.MediaType;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import org.junit.Test;
 import org.mockserver.model.Header;
@@ -21,22 +21,26 @@ import org.mockserver.model.HttpResponse;
 import org.tillerino.osuApiModel.*;
 
 public class DownloaderV2Test extends AbstractMockServerV2Test {
+
+    private final DownloaderV2 invalidTokenRealUriDownloader =
+            new DownloaderV2(TokenHelper.TokenCache.constant("fake"));
+
     @Test
-    public void testFormURL() throws IOException {
+    public void testFormURI() throws IOException {
         assertEquals(
-                new URL("https://osu.ppy.sh/api/v2/verb?parameter=value"),
-                new DownloaderV2("key").formURL("verb", "parameter", "value"));
+                URI.create("https://osu.ppy.sh/api/v2/verb?parameter=value"),
+                invalidTokenRealUriDownloader.formURI("verb", "parameter", "value"));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testFormURLWrongArgNumber() throws IOException {
-        new DownloaderV2("key").formURL("verb", "parameterWithoutValue");
+    public void testFormURIWrongArgNumber() throws IOException {
+        invalidTokenRealUriDownloader.formURI("verb", "parameterWithoutValue");
     }
 
     @Test
     public void testNoValidKey() throws IOException {
         try {
-            DownloaderV2.downloadDirect(new DownloaderV2("wrongKey").formURL(DownloaderV2.GET_BEATMAPS), "1234", "GET");
+            invalidTokenRealUriDownloader.getBeatmap(75);
             fail("we expect an exception");
         } catch (IOException e) {
             assertTrue(e.getMessage().contains("401"));
@@ -47,7 +51,7 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
     public void testInvalidVerb() throws IOException {
 
         assertThatThrownBy(
-                        () -> DownloaderV2.downloadDirect(new DownloaderV2("wrongKey").formURL("verb"), "1234", "GET"))
+                        () -> DownloaderV2.downloadDirect(invalidTokenRealUriDownloader.formURI("verb"), "1234", "GET"))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("response code 401");
     }
@@ -64,8 +68,6 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
 
     @Test
     public void testBeatmapNotFound() throws IOException {
-        TokenHelper.setTestTokenOverride("fake-token");
-
         mockServer
                 .when(new HttpRequest()
                         .withPath("/beatmaps/1")
@@ -83,8 +85,6 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
                         .withHeader("Content-type", "application/json;charset=UTF-8"));
 
         assertNull(downloader.getBeatmap(1));
-
-        TokenHelper.setTestTokenOverride(null);
     }
 
     @Test

@@ -1,6 +1,6 @@
 package org.tillerino.osuApiModel.v2;
 
-import java.net.URL;
+import java.net.URI;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -30,6 +30,8 @@ public abstract class AbstractMockServerV2Test {
 
     @Before
     public void setUp() throws Exception {
-        downloader = new DownloaderV2(new URL("http://localhost:" + mockServerRule.getPort() + "/"), "key");
+        downloader = new DownloaderV2(
+                URI.create("http://localhost:" + mockServerRule.getPort() + "/"),
+                TokenHelper.TokenCache.constant("fake-token"));
     }
 }
