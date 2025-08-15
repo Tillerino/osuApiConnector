@@ -6,12 +6,9 @@ import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.UserId;
 
 record OsuApiBeatmapV2(
-        @BeatmapId
-        int id,
-        @BeatmapSetId
-        int beatmapset_id,
-        @UserId
-        int user_id,
+        @BeatmapId int id,
+        @BeatmapSetId int beatmapset_id,
+        @UserId int user_id,
         String version,
         String status,
         String last_updated,
@@ -23,8 +20,7 @@ record OsuApiBeatmapV2(
         double drain,
         int hit_length,
         int total_length,
-        @GameMode
-        int mode_int,
+        @GameMode int mode_int,
         String checksum,
         int playcount,
         int passcount,

@@ -1,13 +1,9 @@
 package org.tillerino.osuApiModel.v2;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Instant;
 import java.util.List;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 import org.tillerino.osuApiModel.Mods;
 import org.tillerino.osuApiModel.OsuApiBeatmap;
 import org.tillerino.osuApiModel.OsuApiScore;
@@ -33,7 +29,13 @@ interface V2Mapper {
     @Mapping(source = "pp", target = "pp")
     @Mapping(source = "mode_int", target = "mode")
     @Mapping(target = "modsList", ignore = true)
-    OsuApiScore mapScoreToV1(OsuApiScoreV2 scoreV2);
+    void mapScoreToV1(OsuApiScoreV2 scoreV2, @MappingTarget OsuApiScore target);
+
+    default <T extends OsuApiScore> T mapScoreToV1(OsuApiScoreV2 scoreV2, Class<T> cls) {
+        T target = newInstance(cls);
+        mapScoreToV1(scoreV2, target);
+        return target;
+    }
 
     @Mapping(source = "beatmap_id", target = "beatmapId")
     @Mapping(source = "max_combo", target = "maxCombo")
@@ -51,7 +53,13 @@ interface V2Mapper {
     @Mapping(source = "pp", target = "pp")
     @Mapping(source = "mode_int", target = "mode")
     @Mapping(target = "modsList", ignore = true)
-    OsuApiScore mapBeatmapScoreToV1(OsuApiScoreBeatmapV2 scoreV2);
+    void mapBeatmapScoreToV1(OsuApiScoreBeatmapV2 scoreV2, @MappingTarget OsuApiScore target);
+
+    default <T extends OsuApiScore> T mapBeatmapScoreToV1(OsuApiScoreBeatmapV2 scoreV2, Class<T> cls) {
+        T target = newInstance(cls);
+        mapBeatmapScoreToV1(scoreV2, target);
+        return target;
+    }
 
     @Named("modsToBitwise")
     @BitwiseMods
@@ -97,7 +105,13 @@ interface V2Mapper {
     @Mapping(source = "playcount", target = "playCount")
     @Mapping(source = "passcount", target = "passCount")
     @Mapping(source = "max_combo", target = "maxCombo")
-    OsuApiBeatmap mapBeatmapToV1(OsuApiBeatmapV2 beatmapV2);
+    void mapBeatmapToV1(OsuApiBeatmapV2 beatmapV2, @MappingTarget OsuApiBeatmap target);
+
+    default <T extends OsuApiBeatmap> T mapBeatmapToV1(OsuApiBeatmapV2 beatmapNode, Class<T> cls) {
+        T target = newInstance(cls);
+        mapBeatmapToV1(beatmapNode, target);
+        return target;
+    }
 
     @Named("statusToApproved")
     static int convertStatusToApproved(String status) {
@@ -142,5 +156,19 @@ interface V2Mapper {
     @Mapping(source = "statistics.grade_counts.a", target = "countA")
     @Mapping(source = "modeInt", target = "mode")
     @Mapping(source = "username", target = "userName")
-    OsuApiUser mapUserToV1(OsuApiUserV2 v2);
+    void mapUserToV1(OsuApiUserV2 v2, @MappingTarget OsuApiUser target);
+
+    default <T extends OsuApiUser> T mapUserToV1(OsuApiUserV2 userV2, Class<T> cls) {
+        T target = newInstance(cls);
+        mapUserToV1(userV2, target);
+        return target;
+    }
+
+    private static <T> T newInstance(Class<T> cls) {
+        try {
+            return cls.getConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

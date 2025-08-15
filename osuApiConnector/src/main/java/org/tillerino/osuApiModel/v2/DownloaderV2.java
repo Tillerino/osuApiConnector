@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,36 +20,14 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.CheckForNull;
 import org.mapstruct.factory.Mappers;
-import org.tillerino.osuApiModel.GameModes;
-import org.tillerino.osuApiModel.OsuApiBeatmap;
-import org.tillerino.osuApiModel.OsuApiScore;
-import org.tillerino.osuApiModel.OsuApiUser;
-import org.tillerino.osuApiModel.types.BeatmapId;
-import org.tillerino.osuApiModel.types.BeatmapSetId;
-import org.tillerino.osuApiModel.types.GameMode;
-import org.tillerino.osuApiModel.types.UserId;
+import org.tillerino.osuApiModel.*;
+import org.tillerino.osuApiModel.types.*;
 import org.tillerino.osuApiModel.v2.TokenHelper.TokenCache;
 
-public class DownloaderV2 {
+public class DownloaderV2 implements OsuApiClient {
     public static final URI PROD_API_BASE = URI.create("https://osu.ppy.sh/api/v2/");
 
-    public static final String GET_BEATMAPS = "beatmaps/{beatmap}";
-
-    public static final String GET_USER_BEST = "users/{user}/scores/best";
-
-    public static final String GET_SCORES = "beatmaps/{beatmap}/scores";
-
-    public static final String GET_USER = "users/{user}";
-
-    public static final String GET_USER_RECENT = "users/{user}/scores/recent";
-
-    public static final String GET_USER_SCORES_BY_BEATMAP = "beatmaps/{beatmap}/scores/users/{user}";
-
-    public static final String GET_BEATMAP_ATTRIBUTES = "beatmaps/{beatmap}/attributes";
-
-    public static final String GET_BEATMAPSETS = "beatmapsets/{beatmapset}";
-
-    public static final V2Mapper MAPPER = Mappers.getMapper(V2Mapper.class);
+    static final V2Mapper MAPPER = Mappers.getMapper(V2Mapper.class);
 
     static final ObjectMapper JACKSON = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
@@ -83,24 +60,22 @@ public class DownloaderV2 {
         this(TokenCache.inMemory(TokenHelper.Credentials.fromEnvOrProps()));
     }
 
-    private JsonNode getBeatmapData(int beatmapId, String... parameters) throws IOException {
-        // Required to retrieve the same information that was retrieved on the old get_beatmaps endpoint
-        JsonNode beatmapInfoNode = get(GET_BEATMAPS.replace("{beatmap}", String.valueOf(beatmapId)), "GET");
-        JsonNode beatmapAttrNode =
-                get(GET_BEATMAP_ATTRIBUTES.replace("{beatmap}", String.valueOf(beatmapId)), "POST", parameters);
-
-        return ((ObjectNode) beatmapInfoNode).setAll((ObjectNode) beatmapAttrNode);
-    }
-
     @CheckForNull
-    public OsuApiBeatmap getBeatmap(@BeatmapId int beatmapId) throws IOException {
-        JsonNode beatmapData = getBeatmapData(beatmapId);
+    public <T extends OsuApiBeatmap> T getBeatmap(@BeatmapId int beatmapId, @BitwiseMods long mods, Class<T> cls)
+            throws IOException {
+        record BeatmapAttributesRequestBody(@BitwiseMods long mods) {}
+
+        // Required to retrieve the same information that was retrieved on the old get_beatmaps endpoint
+        JsonNode beatmapInfoNode = fetch("beatmaps/{beatmap}", "GET", null, "{beatmap}", beatmapId);
+        JsonNode beatmapAttrNode = fetch("beatmaps/{beatmap}/attributes", "POST", new BeatmapAttributesRequestBody(mods), "{beatmap}", beatmapId);
+
+        JsonNode beatmapData = ((ObjectNode) beatmapInfoNode).setAll((ObjectNode) beatmapAttrNode);
         if (beatmapData.isEmpty()) {
             return null;
         }
 
         OsuApiBeatmapV2 beatmapNode = JACKSON.treeToValue(beatmapData, OsuApiBeatmapV2.class);
-        return MAPPER.mapBeatmapToV1(beatmapNode);
+        return MAPPER.mapBeatmapToV1(beatmapNode, cls);
     }
 
     /**
@@ -112,25 +87,26 @@ public class DownloaderV2 {
     @CheckForNull
     public <T extends OsuApiBeatmap> List<T> getBeatmapSet(@BeatmapSetId int beatmapsetId, Class<T> cls)
             throws IOException {
-        JsonNode array = get(GET_BEATMAPSETS.replace("{beatmapset}", String.valueOf(beatmapsetId)), "GET");
-        if (array.size() == 0) {
+        JsonNode array = fetch("beatmapsets/{beatmapset}", "GET", null, "{beatmapset}", beatmapsetId);
+        if (array.isEmpty()) {
             return null;
         }
 
         return JACKSON.treeToValue(array, TypeFactory.defaultInstance().constructCollectionType(List.class, cls));
     }
 
-    public JsonNode get(String command, String method, String... parameters) throws IOException {
+    public JsonNode fetch(String command, String method, @CheckForNull Object requestBody, Object... parameters)
+            throws IOException {
         URI uri = formURI(command, parameters);
         String token = tokenCache.getToken();
         String content;
 
         try {
-            content = downloadDirect(uri, token, method);
+            content = downloadDirect(uri, token, method, requestBody);
         } catch (SocketTimeoutException e) {
             throw e;
         } catch (IOException e1) {
-            throw new IOException(e1.getMessage() + " for " + formURI(command, parameters), e1);
+            throw new IOException(e1.getMessage() + " for " + uri, e1);
         }
         if (content.equals(INVALID_API_KEY)) throw new RuntimeException(INVALID_API_KEY);
         try {
@@ -142,34 +118,32 @@ public class DownloaderV2 {
         }
     }
 
-    public URI formURI(String command, String... parameters) throws IOException {
+    public URI formURI(String command, Object... parameters) {
         if (parameters.length % 2 != 0) {
             throw new IllegalArgumentException("must provide key value pairs!");
         }
 
-        StringBuilder builder = new StringBuilder(baseUrl);
-        builder.append(command);
-
-        if (parameters.length > 0) {
-            builder.append("?");
-            for (int i = 0; i < parameters.length; i += 2) {
-                if (i > 0) {
-                    builder.append("&");
-                }
-                builder.append(parameters[i]);
-                builder.append("=");
-                builder.append(URLEncoder.encode(parameters[i + 1], StandardCharsets.UTF_8));
+        for (int i = 0; i < parameters.length; i += 2) {
+            if (!(parameters[i] instanceof String s)) {
+                throw new IllegalArgumentException("Not a String: " + parameters[i]);
             }
+            if (!command.contains(s)) {
+                throw new IllegalArgumentException("command must contain parameter " + s + "!");
+            }
+            command = command.replace(
+                    s,
+                    URLEncoder.encode(String.valueOf(parameters[i + 1]), StandardCharsets.UTF_8));
         }
 
-        return URI.create(builder.toString());
+        return URI.create(baseUrl + command);
     }
 
-    public static String downloadDirect(URI uri, String key, String method) throws IOException {
-        return downloadDirect(uri, 5000, key, method);
+    public static String downloadDirect(URI uri, String key, String method, Object requestBody) throws IOException {
+        return downloadDirect(uri, 5000, key, method, requestBody);
     }
 
-    public static String downloadDirect(URI uri, int timeout, String key, String method) throws IOException {
+    public static String downloadDirect(URI uri, int timeout, String key, String method, Object requestBody)
+            throws IOException {
         HttpURLConnection httpCon = (HttpURLConnection) uri.toURL().openConnection();
 
         httpCon.setRequestMethod(method);
@@ -179,6 +153,12 @@ public class DownloaderV2 {
         httpCon.setReadTimeout(timeout);
 
         try {
+            if (requestBody != null) {
+                httpCon.setDoOutput(true);
+                httpCon.setRequestProperty("Content-Type", "application/json");
+                JACKSON.writeValue(httpCon.getOutputStream(), requestBody);
+            }
+
             if (httpCon.getResponseCode() != 200) {
                 throw new IOException("response code " + httpCon.getResponseCode());
             }
@@ -205,7 +185,7 @@ public class DownloaderV2 {
                     baos.write(buf, 0, len);
                 }
 
-                return baos.toString("UTF-8");
+                return baos.toString(StandardCharsets.UTF_8);
             } finally {
                 inputStream.close();
             }
@@ -223,15 +203,18 @@ public class DownloaderV2 {
      * @return
      * @throws IOException
      */
-    public List<OsuApiScore> getUserTop(@UserId int userId, @GameMode int mode, int limit) throws IOException {
-        String modeRuleset = GameModes.getRulesetName(mode);
-        JsonNode jsonArray = get(
-                GET_USER_BEST.replace("{user}", String.valueOf(userId)),
+    public <T extends OsuApiScore> List<T> getUserTop(@UserId int userId, @GameMode int mode, int limit, Class<T> cls)
+            throws IOException {
+        JsonNode jsonArray = fetch(
+                "users/{user}/scores/best?mode={mode}&limit={limit}",
                 "GET",
-                "mode",
-                modeRuleset,
-                "limit",
-                String.valueOf(limit));
+                null,
+                "{user}",
+                userId,
+                "{mode}",
+                GameModes.getRulesetName(mode),
+                "{limit}",
+                limit);
 
         List<OsuApiScoreV2> scores = new ArrayList<>();
         for (JsonNode elem : jsonArray) {
@@ -239,7 +222,7 @@ public class DownloaderV2 {
             scores.add(scoreV2);
         }
 
-        return scores.stream().map(MAPPER::mapScoreToV1).collect(Collectors.toList());
+        return scores.stream().map(scoreV2 -> MAPPER.mapScoreToV1(scoreV2, cls)).collect(Collectors.toList());
     }
 
     /**
@@ -250,10 +233,16 @@ public class DownloaderV2 {
      * @return
      * @throws IOException
      */
-    public List<OsuApiScore> getBeatmapTop(@BeatmapId int beatmapId, @GameMode int mode) throws IOException {
-        String modeRuleset = GameModes.getRulesetName(mode);
-        ArrayNode jsonArray =
-                toArray(get(GET_SCORES.replace("{beatmap}", String.valueOf(beatmapId)), "GET", "mode", modeRuleset));
+    public <T extends OsuApiScore> List<T> getBeatmapTop(@BeatmapId int beatmapId, @GameMode int mode, Class<T> cls)
+            throws IOException {
+        ArrayNode jsonArray = toArray(fetch(
+                "beatmaps/{beatmap}/scores?mode={mode}",
+                "GET",
+                null,
+                "{beatmap}",
+                beatmapId,
+                "{mode}",
+                GameModes.getRulesetName(mode)));
 
         List<OsuApiScoreBeatmapV2> scores = new ArrayList<>();
         for (JsonNode elem : jsonArray) {
@@ -261,7 +250,9 @@ public class DownloaderV2 {
             scores.add(scoreV2);
         }
 
-        return scores.stream().map(MAPPER::mapBeatmapScoreToV1).collect(Collectors.toList());
+        return scores.stream()
+                .map(scoreV2 -> MAPPER.mapBeatmapScoreToV1(scoreV2, cls))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -273,21 +264,23 @@ public class DownloaderV2 {
      * @return
      * @throws IOException
      */
-    public List<OsuApiScore> getBeatmapTop(@BeatmapId int beatmapId, @GameMode int mode, String[] mods)
-            throws IOException {
+    public <T extends OsuApiScore> List<T> getBeatmapTop(
+            @BeatmapId int beatmapId, @GameMode int mode, String[] mods, Class<T> cls) throws IOException {
         String modeRuleset = GameModes.getRulesetName(mode);
 
-        List<String> params = new ArrayList<>();
-        params.add("mode");
-        params.add(modeRuleset);
-
+        StringBuilder modsQuery = new StringBuilder();
         for (String mod : mods) {
-            params.add("mods[]");
-            params.add(mod);
+            modsQuery.append("&mods[]=").append(URLEncoder.encode(mod, StandardCharsets.UTF_8));
         }
 
-        ArrayNode jsonArray = toArray(
-                get(GET_SCORES.replace("{beatmap}", String.valueOf(beatmapId)), "GET", params.toArray(new String[0])));
+        ArrayNode jsonArray = toArray(fetch(
+                "beatmaps/{beatmap}/scores?mode={mode}" + modsQuery,
+                "GET",
+                null,
+                "{beatmap}",
+                beatmapId,
+                "{mode}",
+                modeRuleset));
         ArrayNode scoresArray = (ArrayNode) jsonArray.get(0).get("scores");
 
         List<OsuApiScoreBeatmapV2> scores = new ArrayList<>();
@@ -296,7 +289,9 @@ public class DownloaderV2 {
             scores.add(scoreV2);
         }
 
-        return scores.stream().map(MAPPER::mapBeatmapScoreToV1).collect(Collectors.toList());
+        return scores.stream()
+                .map(scoreV2 -> MAPPER.mapBeatmapScoreToV1(scoreV2, cls))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -304,15 +299,18 @@ public class DownloaderV2 {
      */
     @Deprecated
     @CheckForNull
-    public OsuApiScore getScore(@UserId int userId, @BeatmapId int beatmapId, @GameMode int mode) throws IOException {
-        String modeRuleset = GameModes.getRulesetName(mode);
-        JsonNode jsonElement = get(
-                GET_USER_SCORES_BY_BEATMAP
-                        .replace("{beatmap}", String.valueOf(beatmapId))
-                        .replace("{user}", String.valueOf(userId)),
+    public <T extends OsuApiScore> T getScore(
+            @UserId int userId, @BeatmapId int beatmapId, @GameMode int mode, Class<T> cls) throws IOException {
+        JsonNode jsonElement = fetch(
+                "beatmaps/{beatmap}/scores/users/{user}?mode={mode}",
                 "GET",
-                "mode",
-                modeRuleset);
+                null,
+                "{beatmap}",
+                beatmapId,
+                "{user}",
+                userId,
+                "{mode}",
+                GameModes.getRulesetName(mode));
 
         if (jsonElement.isNull()) return null;
 
@@ -326,47 +324,61 @@ public class DownloaderV2 {
         ObjectNode jsonObject = toObject(jsonArray.get(0).path("score"));
 
         OsuApiScoreV2 scoreV2 = JACKSON.treeToValue(jsonObject, OsuApiScoreV2.class);
-        return MAPPER.mapScoreToV1(scoreV2);
+        return MAPPER.mapScoreToV1(scoreV2, cls);
     }
 
     @CheckForNull
-    public OsuApiUser getUser(@UserId int userId, @GameMode int mode) throws IOException {
-        String modeRuleset = GameModes.getRulesetName(mode);
-        ArrayNode jsonArray = toArray(
-                get(GET_USER.replace("{user}", String.valueOf(userId)), "GET", "mode", modeRuleset, "key", "id"));
+    public <T extends OsuApiUser> T getUser(@UserId int userId, @GameMode int mode, Class<T> cls) throws IOException {
+        ArrayNode jsonArray = toArray(fetch(
+                "users/{user}?mode={mode}&key=id".replace("{user}", String.valueOf(userId)),
+                "GET",
+                null,
+                "{mode}",
+                GameModes.getRulesetName(mode)));
 
-        if (jsonArray.size() == 0) {
+        if (jsonArray.isEmpty()) {
             return null;
         }
 
         OsuApiUserV2 userV2 = JACKSON.treeToValue(jsonArray.get(0), OsuApiUserV2.class);
-        OsuApiUser user = MAPPER.mapUserToV1(userV2);
+        T user = MAPPER.mapUserToV1(userV2, cls);
         user.setMode(mode);
 
         return user;
     }
 
     @CheckForNull
-    public OsuApiUser getUser(String username, @GameMode int mode) throws IOException {
-        String modeRuleset = GameModes.getRulesetName(mode);
-        ArrayNode jsonArray =
-                toArray(get(GET_USER.replace("{user}", username), "GET", "mode", modeRuleset, "key", "username"));
+    public <T extends OsuApiUser> T getUser(String username, @GameMode int mode, Class<T> cls) throws IOException {
+        ArrayNode jsonArray = toArray(fetch(
+                "users/{user}?mode={mode}&key=username".replace("{user}", username),
+                "GET",
+                null,
+                "{mode}",
+                GameModes.getRulesetName(mode)));
 
-        if (jsonArray.size() == 0) {
+        if (jsonArray.isEmpty()) {
             return null;
         }
 
         OsuApiUserV2 userV2 = JACKSON.treeToValue(jsonArray.get(0), OsuApiUserV2.class);
-        OsuApiUser user = MAPPER.mapUserToV1(userV2);
+        T user = MAPPER.mapUserToV1(userV2, cls);
         user.setMode(mode);
 
         return user;
     }
 
-    public List<OsuApiScore> getUserRecent(@UserId int userid, @GameMode int mode) throws IOException {
-        String modeRuleset = GameModes.getRulesetName(mode);
-        JsonNode jsonElement = get(
-                GET_USER_RECENT.replace("{user}", String.valueOf(userid)), "GET", "mode", modeRuleset, "limit", "10");
+    public <T extends OsuApiScore> List<T> getUserRecent(@UserId int userid, @GameMode int mode, Class<T> cls)
+            throws IOException {
+        JsonNode jsonElement = fetch(
+                "users/{user}/scores/recent?mode={mode}&limit={limit}",
+                "GET",
+                null,
+                "{user}",
+                userid,
+                "{mode}",
+                GameModes.getRulesetName(mode),
+                "{limit}",
+                "10");
         if (jsonElement instanceof NullNode) {
             return Collections.emptyList();
         }
@@ -377,7 +389,7 @@ public class DownloaderV2 {
             scores.add(scoreV2);
         }
 
-        return scores.stream().map(MAPPER::mapScoreToV1).collect(Collectors.toList());
+        return scores.stream().map(scoreV2 -> MAPPER.mapScoreToV1(scoreV2, cls)).collect(Collectors.toList());
     }
 
     private static ArrayNode toArray(JsonNode n) {
@@ -417,7 +429,8 @@ public class DownloaderV2 {
             }
 
             @Override
-            public JsonNode get(String command, String method, String... parameters) throws IOException {
+            public JsonNode fetch(String command, String method, Object requestBody, Object... parameters)
+                    throws IOException {
                 URI uri = formURI(command, parameters);
                 if (uri.toString().contains("&") && !uri.toString().contains("?")) {
                     uri = URI.create(uri.toString().replaceFirst("&", "?"));

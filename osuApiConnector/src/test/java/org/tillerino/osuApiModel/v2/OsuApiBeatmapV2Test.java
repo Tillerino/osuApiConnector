@@ -50,7 +50,7 @@ public class OsuApiBeatmapV2Test extends AbstractMockServerV2Test {
     public void testRegressionDownload() throws IOException {
         OsuApiBeatmap expected = expectedDiscoPrince();
 
-        OsuApiBeatmap downloaded = new DownloaderV2().getBeatmap(75);
+        OsuApiBeatmap downloaded = DownloaderV2Test.getProdDownloader().getBeatmap(75, 0L, OsuApiBeatmap.class);
         assertNotNull(downloaded);
 
         expected.setPlayCount(downloaded.getPlayCount());
@@ -75,7 +75,7 @@ public class OsuApiBeatmapV2Test extends AbstractMockServerV2Test {
                 .respond(HttpResponse.response().withBody(beatmapAttributes, MediaType.JSON_UTF_8));
 
         OsuApiBeatmap expected = expectedDiscoPrince();
-        OsuApiBeatmap downloaded = downloader.getBeatmap(75);
+        OsuApiBeatmap downloaded = downloader.getBeatmap(75, 0L, OsuApiBeatmap.class);
         assertNotNull(downloaded);
 
         expected.setPlayCount(downloaded.getPlayCount());

@@ -28,7 +28,7 @@ import org.tillerino.osuApiModel.types.BitwiseMods;
 import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.UserId;
 
-public class Downloader {
+public class Downloader implements OsuApiClient {
     public static final String API_BASE_URL = "https://osu.ppy.sh/api/";
 
     public static final String GET_BEATMAPS = "get_beatmaps";
@@ -123,6 +123,7 @@ public class Downloader {
     }
 
     @CheckForNull
+    @Override
     public <T extends OsuApiBeatmap> T getBeatmap(@BeatmapId int beatmapId, long mods, Class<T> cls)
             throws IOException {
         JsonNode array = get(GET_BEATMAPS, "b", String.valueOf(beatmapId), "mods", String.valueOf(mods));
@@ -243,6 +244,7 @@ public class Downloader {
      * @return
      * @throws IOException
      */
+    @Override
     public <T extends OsuApiScore> List<T> getUserTop(@UserId int userId, @GameMode int mode, int limit, Class<T> cls)
             throws IOException {
         JsonNode jsonArray = get(
@@ -326,6 +328,7 @@ public class Downloader {
     }
 
     @CheckForNull
+    @Override
     public <T extends OsuApiUser> T getUser(@UserId int userId, @GameMode int mode, Class<T> cls) throws IOException {
         ArrayNode jsonArray =
                 toArray(get(GET_USER, "u", String.valueOf(userId), "m", String.valueOf(mode), "type", "id"));
@@ -339,6 +342,7 @@ public class Downloader {
     }
 
     @CheckForNull
+    @Override
     public <T extends OsuApiUser> T getUser(String username, @GameMode int mode, Class<T> cls) throws IOException {
         ArrayNode jsonArray = toArray(get(GET_USER, "u", username, "m", String.valueOf(mode), "type", "string"));
 
@@ -350,6 +354,7 @@ public class Downloader {
         return user;
     }
 
+    @Override
     public <T extends OsuApiScore> List<T> getUserRecent(@UserId int userid, @GameMode int mode, Class<T> cls)
             throws IOException {
         JsonNode jsonElement =

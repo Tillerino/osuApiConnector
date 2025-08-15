@@ -10,7 +10,7 @@ import org.tillerino.osuApiModel.OsuApiUser;
 public class OsuApiUserV2Test {
     @Test
     public void testTillerino() throws IOException {
-        OsuApiUser user = new DownloaderV2().getUser("Tillerino", GameModes.OSU);
+        OsuApiUser user = DownloaderV2Test.getProdDownloader().getUser("Tillerino", GameModes.OSU, OsuApiUser.class);
 
         assertEquals(2070907, user.getUserId());
 
@@ -19,7 +19,7 @@ public class OsuApiUserV2Test {
 
     @Test
     public void testTillerinoById() throws IOException {
-        OsuApiUser user = new DownloaderV2().getUser(2070907, GameModes.OSU);
+        OsuApiUser user = DownloaderV2Test.getProdDownloader().getUser(2070907, GameModes.OSU, OsuApiUser.class);
 
         assertEquals("Tillerino", user.getUserName());
 

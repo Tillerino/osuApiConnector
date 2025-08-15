@@ -14,6 +14,7 @@ import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import lombok.Getter;
 import org.junit.Test;
 import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
@@ -25,11 +26,16 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
     private final DownloaderV2 invalidTokenRealUriDownloader =
             new DownloaderV2(TokenHelper.TokenCache.constant("fake"));
 
+    // Static so that a token is requested once for all tests.
+    // Lazy so that only those tests fail which require the downloader.
+    @Getter(lazy = true)
+    private static final DownloaderV2 prodDownloader = new DownloaderV2();
+
     @Test
     public void testFormURI() throws IOException {
         assertEquals(
-                URI.create("https://osu.ppy.sh/api/v2/verb?parameter=value"),
-                invalidTokenRealUriDownloader.formURI("verb", "parameter", "value"));
+                URI.create("https://osu.ppy.sh/api/v2/verb?parameter=%2F"),
+                invalidTokenRealUriDownloader.formURI("verb?parameter={value}", "{value}", "/"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -40,7 +46,7 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
     @Test
     public void testNoValidKey() throws IOException {
         try {
-            invalidTokenRealUriDownloader.getBeatmap(75);
+            invalidTokenRealUriDownloader.getBeatmap(75, 0L, OsuApiBeatmap.class);
             fail("we expect an exception");
         } catch (IOException e) {
             assertTrue(e.getMessage().contains("401"));
@@ -50,20 +56,10 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
     @Test
     public void testInvalidVerb() throws IOException {
 
-        assertThatThrownBy(
-                        () -> DownloaderV2.downloadDirect(invalidTokenRealUriDownloader.formURI("verb"), "1234", "GET"))
+        assertThatThrownBy(() ->
+                        DownloaderV2.downloadDirect(invalidTokenRealUriDownloader.formURI("verb"), "1234", "GET", null))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("response code 401");
-    }
-
-    /**
-     * For this test to succeed, there has to be a resource "osuapikey" or
-     * system property "osuapikey" containing a valid api key, which is the
-     * recommended way of using the {@link DownloaderV2}
-     */
-    @Test
-    public void testImplicitApiKey() {
-        new DownloaderV2();
     }
 
     @Test
@@ -84,31 +80,32 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
                         .withBody("{ }")
                         .withHeader("Content-type", "application/json;charset=UTF-8"));
 
-        assertNull(downloader.getBeatmap(1));
+        assertNull(downloader.getBeatmap(1, 0L, OsuApiBeatmap.class));
     }
 
     @Test
     public void testGetBeatmap() throws Exception {
-        DownloaderV2 downloader = new DownloaderV2();
+        OsuApiBeatmap nomod = getProdDownloader().getBeatmap(75, 0L, OsuApiBeatmap.class);
+        assertThat(nomod).isNotNull();
 
-        downloader.getBeatmap(75);
+        // also get for DT to check that mods work
+        OsuApiBeatmap dt = getProdDownloader().getBeatmap(75, Mods.getMask(Mods.DoubleTime), OsuApiBeatmap.class);
+        assertThat(dt).isNotNull();
+
+        assertThat(dt.getSpeedDifficulty()).isGreaterThan(nomod.getSpeedDifficulty());
     }
 
     @Test
     public void testGetBeatmapTop() throws Exception {
-        DownloaderV2 downloader = new DownloaderV2();
-
-        downloader.getBeatmapTop(53, 0);
+        getProdDownloader().getBeatmapTop(53, 0, OsuApiScore.class);
     }
 
     @Test
     public void testGetBeatmapTopNomod() throws Exception {
-        DownloaderV2 downloader = new DownloaderV2();
-
         int mods = 0;
         String[] modsArray = bitwiseToModsArray(mods).toArray(new String[0]);
 
-        final List<OsuApiScore> beatmapTop = downloader.getBeatmapTop(53, 0, modsArray);
+        final List<OsuApiScore> beatmapTop = getProdDownloader().getBeatmapTop(53, 0, modsArray, OsuApiScore.class);
 
         for (OsuApiScore osuApiScore : beatmapTop) {
             int apiMods = Math.toIntExact(osuApiScore.getMods());
@@ -120,12 +117,10 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
 
     @Test
     public void testGetBeatmapTopHDDT() throws Exception {
-        DownloaderV2 downloader = new DownloaderV2();
-
         int mods = 72;
         String[] modsArray = bitwiseToModsArray(mods).toArray(new String[0]);
 
-        final List<OsuApiScore> beatmapTop = downloader.getBeatmapTop(53, 0, modsArray);
+        final List<OsuApiScore> beatmapTop = getProdDownloader().getBeatmapTop(53, 0, modsArray, OsuApiScore.class);
 
         for (OsuApiScore osuApiScore : beatmapTop) {
             int apiMods = Math.toIntExact(osuApiScore.getMods());
@@ -135,23 +130,17 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
 
     @Test
     public void testGetUser() throws Exception {
-        DownloaderV2 downloader = new DownloaderV2();
-
-        downloader.getUser("Tillerino", GameModes.OSU);
+        getProdDownloader().getUser("Tillerino", GameModes.OSU, OsuApiUser.class);
     }
 
     @Test
     public void testGetUserRecent() throws Exception {
-        DownloaderV2 downloader = new DownloaderV2();
-
-        downloader.getUserRecent(34226059, GameModes.OSU);
+        getProdDownloader().getUserRecent(34226059, GameModes.OSU, OsuApiScore.class);
     }
 
     @Test
     public void testGetScore() throws Exception {
-        DownloaderV2 downloader = new DownloaderV2();
-
-        final OsuApiScore score = downloader.getScore(2070907, 239265, GameModes.OSU);
+        final OsuApiScore score = getProdDownloader().getScore(2070907, 239265, GameModes.OSU, OsuApiScore.class);
         assertNotNull(score.getPp());
     }
 
@@ -173,7 +162,7 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
                                 .withBody(
                                         "{\"attributes\":{\"star_rating\":7.453050136566162,\"max_combo\":2385,\"aim_difficulty\":3.403049945831299,\"aim_difficult_slider_count\":151.7519989013672,\"speed_difficulty\":3.6965999603271484,\"speed_note_count\":1299.47998046875,\"slider_factor\":0.9964190125465393,\"aim_difficult_strain_count\":322.5840148925781,\"speed_difficult_strain_count\":598.8939819335938}}"));
 
-        assertThat(downloader.getBeatmap(129891))
+        assertThat(downloader.getBeatmap(129891, 0L, OsuApiBeatmap.class))
                 .hasFieldOrPropertyWithValue("aimDifficulty", 3.403049945831299)
                 .hasFieldOrPropertyWithValue("speedDifficulty", 3.6965999603271484);
     }
@@ -190,7 +179,7 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
                 // we can return a missing beatmap, we just want to know that the query is right
                 .respond(response().withBody("{}", MediaType.JSON_UTF_8));
 
-        assertThat(downloader.getBeatmap(123)).isNull();
+        assertThat(downloader.getBeatmap(123, 0L, OsuApiBeatmap.class)).isNull();
 
         mockServer.verify(request("/beatmaps/123"));
         mockServer.verify(request("/beatmaps/123/attributes"));

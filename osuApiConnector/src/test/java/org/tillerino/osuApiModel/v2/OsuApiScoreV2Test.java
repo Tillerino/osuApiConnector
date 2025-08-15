@@ -9,6 +9,7 @@ import org.tillerino.osuApiModel.OsuApiScore;
 public class OsuApiScoreV2Test {
     @Test
     public void testDownloadUserTop50() throws IOException {
-        List<OsuApiScore> scores = new DownloaderV2().getUserTop(2, GameModes.OSU, 50);
+        List<OsuApiScore> scores =
+                DownloaderV2Test.getProdDownloader().getUserTop(2, GameModes.OSU, 50, OsuApiScore.class);
     }
 }
