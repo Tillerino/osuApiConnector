@@ -416,7 +416,6 @@ public class DownloaderV2 {
                 super(TokenHelper.TokenCache.constant("fake"));
             }
 
-            @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "false positive")
             @Override
             public JsonNode get(String command, String method, String... parameters) throws IOException {
                 URI uri = formURI(command, parameters);

@@ -1,17 +1,24 @@
 package org.tillerino.osuApiModel.v2;
 
+import org.tillerino.osuApiModel.types.BeatmapId;
+import org.tillerino.osuApiModel.types.GameMode;
+import org.tillerino.osuApiModel.types.UserId;
+
 import java.util.List;
 
 record OsuApiScoreBeatmapV2(
+        @BeatmapId
         int beatmap_id,
         long score,
         int max_combo,
         boolean perfect,
         List<String> mods,
+        @UserId
         int user_id,
         String created_at,
         String rank,
         Double pp,
+        @GameMode
         int mode_int,
         Statistics statistics) {
 

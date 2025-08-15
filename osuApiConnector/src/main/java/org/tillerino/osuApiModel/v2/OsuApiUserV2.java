@@ -1,6 +1,10 @@
 package org.tillerino.osuApiModel.v2;
 
-record OsuApiUserV2(int id, String username, int modeInt, Country country, Statistics statistics) {
+import org.tillerino.osuApiModel.types.GameMode;
+import org.tillerino.osuApiModel.types.OsuName;
+import org.tillerino.osuApiModel.types.UserId;
+
+record OsuApiUserV2(@UserId int id, @OsuName String username, @GameMode int modeInt, Country country, Statistics statistics) {
 
     record Country(String code) {}
 

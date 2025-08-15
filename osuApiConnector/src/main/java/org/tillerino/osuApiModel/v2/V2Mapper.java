@@ -2,6 +2,8 @@ package org.tillerino.osuApiModel.v2;
 
 import java.time.Instant;
 import java.util.List;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -10,6 +12,8 @@ import org.tillerino.osuApiModel.Mods;
 import org.tillerino.osuApiModel.OsuApiBeatmap;
 import org.tillerino.osuApiModel.OsuApiScore;
 import org.tillerino.osuApiModel.OsuApiUser;
+import org.tillerino.osuApiModel.types.BitwiseMods;
+import org.tillerino.osuApiModel.types.MillisSinceEpoch;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.ERROR)
 interface V2Mapper {
@@ -50,6 +54,7 @@ interface V2Mapper {
     OsuApiScore mapBeatmapScoreToV1(OsuApiScoreBeatmapV2 scoreV2);
 
     @Named("modsToBitwise")
+    @BitwiseMods
     static long modsToBitwise(List<String> modsArray) {
         if (modsArray == null) {
             return 0L;
@@ -58,6 +63,8 @@ interface V2Mapper {
     }
 
     @Named("isoToEpoch")
+    @MillisSinceEpoch
+    @SuppressFBWarnings("TQ_UNKNOWN_VALUE_USED_WHERE_ALWAYS_STRICTLY_REQUIRED")
     static long isoToEpoch(String isoDate) {
         return isoDate == null ? 0L : Instant.parse(isoDate).toEpochMilli();
     }
@@ -107,10 +114,9 @@ interface V2Mapper {
     }
 
     @Named("parseDate")
+    @MillisSinceEpoch
+    @SuppressFBWarnings("TQ_UNKNOWN_VALUE_USED_WHERE_ALWAYS_STRICTLY_REQUIRED")
     static long parseDate(String dateString) {
-        if (dateString == null || dateString.isEmpty()) {
-            return 0;
-        }
         try {
             Instant instant = Instant.parse(dateString);
             return instant.toEpochMilli();
