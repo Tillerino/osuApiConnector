@@ -22,7 +22,7 @@ public class OsuApiBeatmapV2Test extends AbstractMockServerV2Test {
         expected.setTitle("DISCO PRINCE");
         expected.setVersion("Normal");
         expected.setCreator("peppy");
-        expected.setSource(null);
+        expected.setSource("");
         expected.setApproved(1);
         expected.setApprovedDate(1191692791000L);
         expected.setLastUpdate(1718293407000L);

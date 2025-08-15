@@ -1,39 +1,24 @@
 package org.tillerino.osuApiModel.v2;
 
-public class OsuApiUserV2 {
-    public int id;
-    public String username;
-    public int modeInt;
+record OsuApiUserV2(int id, String username, int modeInt, Country country, Statistics statistics) {
 
-    public Country country;
-    public Statistics statistics;
+    record Country(String code) {}
 
-    public static class Country {
-        public String code;
-    }
+    record Statistics(
+            int count_300,
+            int count_100,
+            int count_50,
+            int play_count,
+            long ranked_score,
+            long total_score,
+            int global_rank,
+            double pp,
+            double hit_accuracy,
+            Level level,
+            GradeCounts grade_counts) {
 
-    public static class Statistics {
-        public int count_300;
-        public int count_100;
-        public int count_50;
-        public int play_count;
-        public long ranked_score;
-        public long total_score;
-        public int global_rank;
-        public double pp;
-        public double hit_accuracy;
+        record Level(double current) {}
 
-        public Level level;
-        public GradeCounts grade_counts;
-
-        public static class Level {
-            public double current;
-        }
-
-        public static class GradeCounts {
-            public int ss;
-            public int s;
-            public int a;
-        }
+        record GradeCounts(int ss, int s, int a) {}
     }
 }

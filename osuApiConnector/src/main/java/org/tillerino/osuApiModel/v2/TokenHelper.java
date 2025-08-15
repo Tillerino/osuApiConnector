@@ -35,8 +35,8 @@ public class TokenHelper {
         }
 
         TokenResponse response = requestNewToken(key);
-        writeCache(response.accessToken, System.currentTimeMillis() + response.expiresIn * 1000L - 10_000);
-        return response.accessToken;
+        writeCache(response.accessToken(), System.currentTimeMillis() + response.expiresIn() * 1000L - 10_000);
+        return response.accessToken();
     }
 
     private static void writeCache(String accessToken, long expiresAt) throws IOException {
@@ -127,4 +127,6 @@ public class TokenHelper {
 
         return new TokenResponse(token, Integer.parseInt(expiresStr));
     }
+
+    public static record TokenResponse(String accessToken, int expiresIn) {}
 }

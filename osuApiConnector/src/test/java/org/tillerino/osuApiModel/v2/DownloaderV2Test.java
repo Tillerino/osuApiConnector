@@ -19,7 +19,6 @@ import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.tillerino.osuApiModel.*;
-import org.tillerino.osuApiModel.deserializer.BitwiseToMods;
 
 public class DownloaderV2Test extends AbstractMockServerV2Test {
     @Test
@@ -107,7 +106,7 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
         DownloaderV2 downloader = new DownloaderV2();
 
         int mods = 0;
-        String[] modsArray = BitwiseToMods.bitwiseToModsArray(mods).toArray(new String[0]);
+        String[] modsArray = bitwiseToModsArray(mods).toArray(new String[0]);
 
         final List<OsuApiScore> beatmapTop = downloader.getBeatmapTop(53, 0, modsArray);
 
@@ -124,7 +123,7 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
         DownloaderV2 downloader = new DownloaderV2();
 
         int mods = 72;
-        String[] modsArray = BitwiseToMods.bitwiseToModsArray(mods).toArray(new String[0]);
+        String[] modsArray = bitwiseToModsArray(mods).toArray(new String[0]);
 
         final List<OsuApiScore> beatmapTop = downloader.getBeatmapTop(53, 0, modsArray);
 
@@ -195,5 +194,13 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
 
         mockServer.verify(request("/beatmaps/123"));
         mockServer.verify(request("/beatmaps/123/attributes"));
+    }
+
+    static List<String> bitwiseToModsArray(int bitwise) {
+        if (bitwise == 0) {
+            return List.of("NM");
+        }
+
+        return Mods.getMods(bitwise).stream().map(Mods::getShortName).toList();
     }
 }

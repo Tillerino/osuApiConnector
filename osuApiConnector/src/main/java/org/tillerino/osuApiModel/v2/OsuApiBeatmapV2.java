@@ -1,47 +1,38 @@
 package org.tillerino.osuApiModel.v2;
 
-import lombok.Data;
+record OsuApiBeatmapV2(
+        int id,
+        int beatmapset_id,
+        int user_id,
+        String version,
+        String status,
+        String last_updated,
+        double bpm,
+        double difficulty_rating,
+        double accuracy,
+        double ar,
+        double cs,
+        double drain,
+        int hit_length,
+        int total_length,
+        int mode_int,
+        String checksum,
+        int playcount,
+        int passcount,
+        int max_combo,
+        Beatmapset beatmapset,
+        Attributes attributes) {
 
-@Data
-public class OsuApiBeatmapV2 {
-    private int id;
-    private int beatmapset_id;
-    private int user_id;
-    private String version;
-    private String status;
-    private String last_updated;
-    private double bpm;
-    private double difficulty_rating;
-    private double accuracy;
-    private double ar;
-    private double cs;
-    private double drain;
-    private int hit_length;
-    private int total_length;
-    private int mode_int;
-    private String checksum;
-    private int playcount;
-    private int passcount;
-    private int max_combo;
+    record Beatmapset(
+            String title,
+            String artist,
+            String source,
+            String creator,
+            String tags,
+            int genre_id,
+            int language_id,
+            String ranked_date,
+            int favourite_count) {}
 
-    private Beatmapset beatmapset;
-    private Attributes attributes;
-
-    @Data
-    public static class Beatmapset {
-        private String title;
-        private String artist;
-        private String creator;
-        private String tags;
-        private int genre_id;
-        private int language_id;
-        private String ranked_date;
-        private int favourite_count;
-    }
-
-    @Data
-    public static class Attributes {
-        private double aim_difficulty;
-        private double speed_difficulty;
-    }
+    record Attributes(double aim_difficulty, double speed_difficulty) {}
 }

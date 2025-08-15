@@ -21,8 +21,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import javax.annotation.CheckForNull;
+import org.mapstruct.factory.Mappers;
 import org.tillerino.osuApiModel.GameModes;
 import org.tillerino.osuApiModel.OsuApiBeatmap;
 import org.tillerino.osuApiModel.OsuApiScore;
@@ -31,9 +33,6 @@ import org.tillerino.osuApiModel.types.BeatmapId;
 import org.tillerino.osuApiModel.types.BeatmapSetId;
 import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.UserId;
-import org.tillerino.osuApiModel.v2.utils.BeatmapConversionUtil;
-import org.tillerino.osuApiModel.v2.utils.ScoreConversionUtil;
-import org.tillerino.osuApiModel.v2.utils.UserConversionUtil;
 
 public class DownloaderV2 {
     public static final String API_BASE_URL = "https://osu.ppy.sh/api/v2/";
@@ -53,6 +52,8 @@ public class DownloaderV2 {
     public static final String GET_BEATMAP_ATTRIBUTES = "beatmaps/{beatmap}/attributes";
 
     public static final String GET_BEATMAPSETS = "beatmapsets/{beatmapset}";
+
+    public static final V2Mapper MAPPER = Mappers.getMapper(V2Mapper.class);
 
     static final ObjectMapper JACKSON = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
@@ -141,7 +142,7 @@ public class DownloaderV2 {
         }
 
         OsuApiBeatmapV2 beatmapNode = JACKSON.treeToValue(beatmapData, OsuApiBeatmapV2.class);
-        return BeatmapConversionUtil.fromV2Beatmap(beatmapNode);
+        return MAPPER.mapBeatmapToV1(beatmapNode);
     }
 
     /**
@@ -281,7 +282,7 @@ public class DownloaderV2 {
             scores.add(scoreV2);
         }
 
-        return ScoreConversionUtil.fromV2Score(scores);
+        return scores.stream().map(MAPPER::mapScoreToV1).collect(Collectors.toList());
     }
 
     /**
@@ -303,7 +304,7 @@ public class DownloaderV2 {
             scores.add(scoreV2);
         }
 
-        return ScoreConversionUtil.fromV2ScoreBeatmap(scores);
+        return scores.stream().map(MAPPER::mapBeatmapScoreToV1).collect(Collectors.toList());
     }
 
     /**
@@ -338,7 +339,7 @@ public class DownloaderV2 {
             scores.add(scoreV2);
         }
 
-        return ScoreConversionUtil.fromV2ScoreBeatmap(scores);
+        return scores.stream().map(MAPPER::mapBeatmapScoreToV1).collect(Collectors.toList());
     }
 
     /**
@@ -368,7 +369,7 @@ public class DownloaderV2 {
         ObjectNode jsonObject = toObject(jsonArray.get(0).path("score"));
 
         OsuApiScoreV2 scoreV2 = JACKSON.treeToValue(jsonObject, OsuApiScoreV2.class);
-        return ScoreConversionUtil.fromV2Score(scoreV2);
+        return MAPPER.mapScoreToV1(scoreV2);
     }
 
     @CheckForNull
@@ -382,7 +383,7 @@ public class DownloaderV2 {
         }
 
         OsuApiUserV2 userV2 = JACKSON.treeToValue(jsonArray.get(0), OsuApiUserV2.class);
-        OsuApiUser user = UserConversionUtil.fromV2User(userV2);
+        OsuApiUser user = MAPPER.mapUserToV1(userV2);
         user.setMode(mode);
 
         return user;
@@ -399,7 +400,7 @@ public class DownloaderV2 {
         }
 
         OsuApiUserV2 userV2 = JACKSON.treeToValue(jsonArray.get(0), OsuApiUserV2.class);
-        OsuApiUser user = UserConversionUtil.fromV2User(userV2);
+        OsuApiUser user = MAPPER.mapUserToV1(userV2);
         user.setMode(mode);
 
         return user;
@@ -419,7 +420,7 @@ public class DownloaderV2 {
             scores.add(scoreV2);
         }
 
-        return ScoreConversionUtil.fromV2Score(scores);
+        return scores.stream().map(MAPPER::mapScoreToV1).collect(Collectors.toList());
     }
 
     private static ArrayNode toArray(JsonNode n) {
