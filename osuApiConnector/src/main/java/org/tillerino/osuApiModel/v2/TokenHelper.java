@@ -22,14 +22,14 @@ public class TokenHelper {
             new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
     // Reference: https://osu.ppy.sh/docs/index.html#client-credentials-grant
-    private static TokenResponse requestNewToken(String clientId, String clientSecret) throws IOException {
+    private static TokenResponse requestNewToken(URI base, String clientId, String clientSecret) throws IOException {
         log.info("Requesting new osu! API token for client ID {}", clientId);
 
         String urlParams = "client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) + "&client_secret="
                 + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8) + "&grant_type=client_credentials"
                 + "&scope=public";
 
-        URL url = URI.create("https://osu.ppy.sh/oauth/token").toURL();
+        URL url = base.resolve("/oauth/token").toURL();
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
         conn.setDoOutput(true);
@@ -49,9 +49,11 @@ public class TokenHelper {
     }
 
     public abstract static class TokenCache {
+        private final URI base;
         private final Credentials credentials;
 
-        protected TokenCache(Credentials credentials) {
+        protected TokenCache(URI base, Credentials credentials) {
+            this.base = base;
             this.credentials = credentials;
         }
 
@@ -59,7 +61,7 @@ public class TokenHelper {
             CachedToken cached = getCachedToken();
             OffsetDateTime now = OffsetDateTime.now();
             if (cached == null || cached.expiresAt().minusSeconds(10).isBefore(now)) {
-                TokenResponse newToken = requestNewToken(credentials.clientId, credentials.clientSecret);
+                TokenResponse newToken = requestNewToken(base, credentials.clientId, credentials.clientSecret);
                 cached = new CachedToken(newToken.accessToken, now.plusSeconds(newToken.expiresIn));
                 cacheToken(cached);
             }
@@ -70,8 +72,8 @@ public class TokenHelper {
 
         protected abstract void cacheToken(CachedToken cached);
 
-        public static TokenCache inFile(Credentials credentials, File file) {
-            return new TokenCache(credentials) {
+        public static TokenCache inFile(URI base, Credentials credentials, File file) {
+            return new TokenCache(base, credentials) {
                 @CheckForNull
                 CachedToken cache = null;
 
@@ -99,8 +101,8 @@ public class TokenHelper {
             };
         }
 
-        public static TokenCache inMemory(Credentials credentials) {
-            return new TokenCache(credentials) {
+        public static TokenCache inMemory(URI base, Credentials credentials) {
+            return new TokenCache(base, credentials) {
                 CachedToken cache = null;
 
                 @Override
@@ -116,7 +118,7 @@ public class TokenHelper {
         }
 
         public static TokenCache constant(String token) {
-            return new TokenCache(new Credentials("12345", "0123456789012345678901234567890123456789")) {
+            return new TokenCache(null, new Credentials("12345", "0123456789012345678901234567890123456789")) {
                 @Override
                 protected CachedToken getCachedToken() {
                     return new CachedToken(token, OffsetDateTime.now().plusYears(10));

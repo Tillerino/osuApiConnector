@@ -212,10 +212,10 @@
         <version>2.44.3</version>
         <configuration>
           <java>
-            <palantirJavaFormat />
+            <palantirJavaFormat></palantirJavaFormat>
           </java>
           <pom>
-            <sortPom />
+            <sortPom></sortPom>
           </pom>
         </configuration>
       </plugin>

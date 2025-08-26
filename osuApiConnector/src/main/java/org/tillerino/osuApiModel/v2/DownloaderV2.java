@@ -25,7 +25,7 @@ import org.tillerino.osuApiModel.types.*;
 import org.tillerino.osuApiModel.v2.TokenHelper.TokenCache;
 
 public class DownloaderV2 implements OsuApiClient {
-    public static final URI PROD_API_BASE = URI.create("https://osu.ppy.sh/api/v2/");
+    public static final URI PROD_API_BASE = URI.create("https://osu.ppy.sh");
 
     static final V2Mapper MAPPER = Mappers.getMapper(V2Mapper.class);
 
@@ -57,7 +57,7 @@ public class DownloaderV2 implements OsuApiClient {
      * "osuapikey", either of which should only contain a valid api key.
      */
     public DownloaderV2() {
-        this(TokenCache.inMemory(TokenHelper.Credentials.fromEnvOrProps()));
+        this(TokenCache.inMemory(PROD_API_BASE, TokenHelper.Credentials.fromEnvOrProps()));
     }
 
     @CheckForNull
@@ -67,7 +67,12 @@ public class DownloaderV2 implements OsuApiClient {
 
         // Required to retrieve the same information that was retrieved on the old get_beatmaps endpoint
         JsonNode beatmapInfoNode = fetch("beatmaps/{beatmap}", "GET", null, "{beatmap}", beatmapId);
-        JsonNode beatmapAttrNode = fetch("beatmaps/{beatmap}/attributes", "POST", new BeatmapAttributesRequestBody(mods), "{beatmap}", beatmapId);
+        JsonNode beatmapAttrNode = fetch(
+                "beatmaps/{beatmap}/attributes",
+                "POST",
+                new BeatmapAttributesRequestBody(mods),
+                "{beatmap}",
+                beatmapId);
 
         JsonNode beatmapData = ((ObjectNode) beatmapInfoNode).setAll((ObjectNode) beatmapAttrNode);
         if (beatmapData.isEmpty()) {
@@ -130,12 +135,10 @@ public class DownloaderV2 implements OsuApiClient {
             if (!command.contains(s)) {
                 throw new IllegalArgumentException("command must contain parameter " + s + "!");
             }
-            command = command.replace(
-                    s,
-                    URLEncoder.encode(String.valueOf(parameters[i + 1]), StandardCharsets.UTF_8));
+            command = command.replace(s, URLEncoder.encode(String.valueOf(parameters[i + 1]), StandardCharsets.UTF_8));
         }
 
-        return URI.create(baseUrl + command);
+        return URI.create(baseUrl + "/api/v2/" + command);
     }
 
     public static String downloadDirect(URI uri, String key, String method, Object requestBody) throws IOException {

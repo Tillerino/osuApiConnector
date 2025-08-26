@@ -31,7 +31,7 @@ public abstract class AbstractMockServerV2Test {
     @Before
     public void setUp() throws Exception {
         downloader = new DownloaderV2(
-                URI.create("http://localhost:" + mockServerRule.getPort() + "/"),
+                URI.create("http://localhost:" + mockServerRule.getPort()),
                 TokenHelper.TokenCache.constant("fake-token"));
     }
 }
