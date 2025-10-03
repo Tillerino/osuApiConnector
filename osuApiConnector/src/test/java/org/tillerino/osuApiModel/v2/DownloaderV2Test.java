@@ -97,7 +97,7 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
 
     @Test
     public void testGetBeatmapTop() throws Exception {
-        getProdDownloader().getBeatmapTop(53, 0, OsuApiScore.class);
+        assertThat(getProdDownloader().getBeatmapTop(53, 0, OsuApiScore.class)).hasSize(50);
     }
 
     @Test

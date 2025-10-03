@@ -234,24 +234,7 @@ public class DownloaderV2 implements OsuApiClient {
      */
     public <T extends OsuApiScore> List<T> getBeatmapTop(@BeatmapId int beatmapId, @GameMode int mode, Class<T> cls)
             throws IOException {
-        ArrayNode jsonArray = toArray(fetch(
-                "beatmaps/{beatmap}/scores?mode={mode}",
-                "GET",
-                null,
-                "{beatmap}",
-                beatmapId,
-                "{mode}",
-                GameModes.getRulesetName(mode)));
-
-        List<OsuApiScoreBeatmapV2> scores = new ArrayList<>();
-        for (JsonNode elem : jsonArray) {
-            OsuApiScoreBeatmapV2 scoreV2 = JACKSON.treeToValue(elem, OsuApiScoreBeatmapV2.class);
-            scores.add(scoreV2);
-        }
-
-        return scores.stream()
-                .map(scoreV2 -> MAPPER.mapBeatmapScoreToV1(scoreV2, cls))
-                .collect(Collectors.toList());
+        return getBeatmapTop(beatmapId, mode, new String[0], cls);
     }
 
     /**
