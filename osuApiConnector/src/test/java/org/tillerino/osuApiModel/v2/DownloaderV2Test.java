@@ -124,7 +124,8 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
 
         for (OsuApiScore osuApiScore : beatmapTop) {
             int apiMods = Math.toIntExact(osuApiScore.getMods());
-            assertTrue(apiMods == 72 || apiMods == 520); // DT+HD or NC+HD
+          assertEquals(8, (apiMods & 8));
+          assertTrue((apiMods & 64) == 64 || (apiMods & 512) == 512);
         }
     }
 
