@@ -178,10 +178,6 @@ public class DownloaderV2 implements OsuApiClient {
                     throw new IOException("unexpected content-type: " + contentType);
                 }
 
-                if (!contentType.toLowerCase().contains("charset=utf-8")) {
-                    System.err.println("Warning: unexpected charset in content-type: " + contentType);
-                }
-
                 byte[] buf = new byte[1024];
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 for (int len; (len = inputStream.read(buf)) > 0; ) {
