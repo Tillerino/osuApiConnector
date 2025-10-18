@@ -54,9 +54,9 @@ public enum Mods {
      * In the V2 API, the opposite - "Classic" exists.
      * Since this whole API is geared toward V1, we shoehorn compatibility in
      * by marking all non-classic V2 scores as "V2".
-     * We use max value so that we don't interfere with future mods.
+     * We use max positive value so that we don't interfere with future mods.
      */
-    V2(Long.MAX_VALUE, null, false),
+    V2(1L << 62, null, false),
     ;
 
     static final HashMap<String, Mods> shortNames = new HashMap<>();
