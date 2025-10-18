@@ -152,6 +152,7 @@ public class DownloaderV2 implements OsuApiClient {
         httpCon.setRequestMethod(method);
         httpCon.setRequestProperty("Authorization", "Bearer " + key);
         httpCon.setRequestProperty("Accept-Encoding", "gzip");
+        httpCon.setRequestProperty("x-api-version", "20220705");
         httpCon.setConnectTimeout(timeout);
         httpCon.setReadTimeout(timeout);
 
@@ -215,13 +216,13 @@ public class DownloaderV2 implements OsuApiClient {
                 "{limit}",
                 limit);
 
-        List<OsuApiScoreV2> scores = new ArrayList<>();
+        List<T> scores = new ArrayList<>();
         for (JsonNode elem : jsonArray) {
             OsuApiScoreV2 scoreV2 = JACKSON.treeToValue(elem, OsuApiScoreV2.class);
-            scores.add(scoreV2);
+            scores.add(MAPPER.mapScoreToV1(scoreV2, cls, mode));
         }
 
-        return scores.stream().map(scoreV2 -> MAPPER.mapScoreToV1(scoreV2, cls)).collect(Collectors.toList());
+        return scores;
     }
 
     /**
@@ -265,15 +266,13 @@ public class DownloaderV2 implements OsuApiClient {
                 modeRuleset));
         ArrayNode scoresArray = (ArrayNode) jsonArray.get(0).get("scores");
 
-        List<OsuApiScoreBeatmapV2> scores = new ArrayList<>();
+        List<T> scores = new ArrayList<>();
         for (JsonNode elem : scoresArray) {
             OsuApiScoreBeatmapV2 scoreV2 = JACKSON.treeToValue(elem, OsuApiScoreBeatmapV2.class);
-            scores.add(scoreV2);
+            scores.add(MAPPER.mapBeatmapScoreToV1(scoreV2, cls, mode));
         }
 
-        return scores.stream()
-                .map(scoreV2 -> MAPPER.mapBeatmapScoreToV1(scoreV2, cls))
-                .collect(Collectors.toList());
+        return scores;
     }
 
     /**
@@ -306,7 +305,7 @@ public class DownloaderV2 implements OsuApiClient {
         ObjectNode jsonObject = toObject(jsonArray.get(0).path("score"));
 
         OsuApiScoreV2 scoreV2 = JACKSON.treeToValue(jsonObject, OsuApiScoreV2.class);
-        return MAPPER.mapScoreToV1(scoreV2, cls);
+      return MAPPER.mapScoreToV1(scoreV2, cls, mode);
     }
 
     @CheckForNull
@@ -323,10 +322,8 @@ public class DownloaderV2 implements OsuApiClient {
         }
 
         OsuApiUserV2 userV2 = JACKSON.treeToValue(jsonArray.get(0), OsuApiUserV2.class);
-        T user = MAPPER.mapUserToV1(userV2, cls);
-        user.setMode(mode);
 
-        return user;
+      return MAPPER.mapUserToV1(userV2, cls, mode);
     }
 
     @CheckForNull
@@ -343,10 +340,8 @@ public class DownloaderV2 implements OsuApiClient {
         }
 
         OsuApiUserV2 userV2 = JACKSON.treeToValue(jsonArray.get(0), OsuApiUserV2.class);
-        T user = MAPPER.mapUserToV1(userV2, cls);
-        user.setMode(mode);
 
-        return user;
+      return MAPPER.mapUserToV1(userV2, cls, mode);
     }
 
     public <T extends OsuApiScore> List<T> getUserRecent(@UserId int userid, @GameMode int mode, Class<T> cls)
@@ -365,13 +360,13 @@ public class DownloaderV2 implements OsuApiClient {
             return Collections.emptyList();
         }
 
-        List<OsuApiScoreV2> scores = new ArrayList<>();
+        List<T> scores = new ArrayList<>();
         for (JsonNode elem : jsonElement) {
             OsuApiScoreV2 scoreV2 = JACKSON.treeToValue(elem, OsuApiScoreV2.class);
-            scores.add(scoreV2);
+            scores.add(MAPPER.mapScoreToV1(scoreV2, cls, mode));
         }
 
-        return scores.stream().map(scoreV2 -> MAPPER.mapScoreToV1(scoreV2, cls)).collect(Collectors.toList());
+        return scores;
     }
 
     private static ArrayNode toArray(JsonNode n) {

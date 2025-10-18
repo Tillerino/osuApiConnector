@@ -1,24 +1,25 @@
 package org.tillerino.osuApiModel.v2;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import org.tillerino.osuApiModel.types.BeatmapId;
-import org.tillerino.osuApiModel.types.GameMode;
 import org.tillerino.osuApiModel.types.UserId;
 
 record OsuApiScoreV2(
-        long score,
-        int max_combo,
-        boolean perfect,
-        List<String> mods,
-        @UserId int user_id,
-        String created_at,
-        String rank,
-        Double pp,
-        @GameMode int mode_int,
-        Beatmap beatmap,
-        Statistics statistics) {
+        @JsonProperty(required = true, value = "total_score") long score,
+        @JsonProperty(required = true, value = "max_combo") int maxCombo,
+        @JsonProperty(required = true, value = "is_perfect_combo") boolean perfect,
+        @JsonProperty(required = true) List<ModWrapper> mods,
+        @JsonProperty(required = true, value = "user_id") @UserId int userId,
+        @JsonProperty(required = true, value = "ended_at") String date,
+        @JsonProperty(required = true) String rank,
+        @JsonProperty(required = true) Double pp,
+        @JsonProperty(required = true) Beatmap beatmap,
+        @JsonProperty(required = true) ScoreStatistics statistics) {
 
-    record Beatmap(@BeatmapId int id) {}
+    record Beatmap(@JsonProperty(required = true) @BeatmapId int id) {}
 
-    record Statistics(int count_300, int count_100, int count_50, int count_miss, int count_katu, int count_geki) {}
+    record ScoreStatistics(int great, int ok, int meh, int miss, int large_bonus, int small_bonus) {}
+
+    record ModWrapper(@JsonProperty(required = true) String acronym) {}
 }

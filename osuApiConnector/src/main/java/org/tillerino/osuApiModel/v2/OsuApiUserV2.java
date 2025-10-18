@@ -1,29 +1,35 @@
 package org.tillerino.osuApiModel.v2;
 
-import org.tillerino.osuApiModel.types.GameMode;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.tillerino.osuApiModel.types.OsuName;
 import org.tillerino.osuApiModel.types.UserId;
 
 record OsuApiUserV2(
-        @UserId int id, @OsuName String username, @GameMode int modeInt, Country country, Statistics statistics) {
+        @JsonProperty(required = true) @UserId int id,
+        @JsonProperty(required = true) @OsuName String username,
+        @JsonProperty(required = true) Country country,
+        @JsonProperty(required = true) Statistics statistics) {
 
-    record Country(String code) {}
+    record Country(@JsonProperty(required = true) String code) {}
 
     record Statistics(
-            int count_300,
-            int count_100,
-            int count_50,
-            int play_count,
-            long ranked_score,
-            long total_score,
-            int global_rank,
-            double pp,
-            double hit_accuracy,
-            Level level,
-            GradeCounts grade_counts) {
+            @JsonProperty(required = true) int count_300,
+            @JsonProperty(required = true) int count_100,
+            @JsonProperty(required = true) int count_50,
+            @JsonProperty(required = true) int play_count,
+            @JsonProperty(required = true) long ranked_score,
+            @JsonProperty(required = true) long total_score,
+            @JsonProperty(required = true) int global_rank,
+            @JsonProperty(required = true) double pp,
+            @JsonProperty(required = true) double hit_accuracy,
+            @JsonProperty(required = true) Level level,
+            @JsonProperty(required = true) GradeCounts grade_counts) {
 
-        record Level(double current) {}
+        record Level(@JsonProperty(required = true) double current) {}
 
-        record GradeCounts(int ss, int s, int a) {}
+        record GradeCounts(
+                @JsonProperty(required = true) int ss,
+                @JsonProperty(required = true) int s,
+                @JsonProperty(required = true) int a) {}
     }
 }

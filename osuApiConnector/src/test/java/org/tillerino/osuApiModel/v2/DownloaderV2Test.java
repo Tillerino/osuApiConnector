@@ -102,13 +102,11 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
 
     @Test
     public void testGetBeatmapTopNomod() throws Exception {
-        int mods = 0;
-        String[] modsArray = bitwiseToModsArray(mods).toArray(new String[0]);
-
-        final List<OsuApiScore> beatmapTop = getProdDownloader().getBeatmapTop(53, 0, modsArray, OsuApiScore.class);
+        final List<OsuApiScore> beatmapTop =
+                getProdDownloader().getBeatmapTop(53, 0, new String[] {"NM"}, OsuApiScore.class);
 
         for (OsuApiScore osuApiScore : beatmapTop) {
-            int apiMods = Math.toIntExact(osuApiScore.getMods());
+            long apiMods = osuApiScore.getMods() & ~Mods.getMask(Mods.V2);
             assertTrue(apiMods == 0
                     || apiMods == 32
                     || apiMods == 16384); // nomod scores always come with PF and SD scores
@@ -117,15 +115,13 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
 
     @Test
     public void testGetBeatmapTopHDDT() throws Exception {
-        int mods = 72;
-        String[] modsArray = bitwiseToModsArray(mods).toArray(new String[0]);
-
-        final List<OsuApiScore> beatmapTop = getProdDownloader().getBeatmapTop(53, 0, modsArray, OsuApiScore.class);
+        final List<OsuApiScore> beatmapTop =
+                getProdDownloader().getBeatmapTop(53, 0, new String[] {"HD", "DT"}, OsuApiScore.class);
 
         for (OsuApiScore osuApiScore : beatmapTop) {
-            int apiMods = Math.toIntExact(osuApiScore.getMods());
-          assertEquals(8, (apiMods & 8));
-          assertTrue((apiMods & 64) == 64 || (apiMods & 512) == 512);
+            long apiMods = osuApiScore.getMods();
+            assertEquals(8, (apiMods & 8));
+            assertTrue((apiMods & 64) == 64 || (apiMods & 512) == 512);
         }
     }
 
@@ -140,9 +136,20 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
     }
 
     @Test
-    public void testGetScore() throws Exception {
+    public void testGetClassicScore() throws Exception {
         final OsuApiScore score = getProdDownloader().getScore(2070907, 239265, GameModes.OSU, OsuApiScore.class);
         assertNotNull(score.getPp());
+        // classic mod not listed
+        assertThat(score).returns(Mods.getMask(Mods.Hidden, Mods.HardRock), OsuApiScore::getMods);
+    }
+
+    @Test
+    public void testGetLazerScore() throws Exception {
+        final OsuApiScore score = getProdDownloader().getScore(8660293, 131891, GameModes.OSU, OsuApiScore.class);
+        // score is listed with zero pp? not in beatmap top :shrug:
+        assertNull(score.getPp());
+        // listed with V2 mod
+        assertThat(score).returns(Mods.getMask(Mods.V2, Mods.Mirror), OsuApiScore::getMods);
     }
 
     @Test

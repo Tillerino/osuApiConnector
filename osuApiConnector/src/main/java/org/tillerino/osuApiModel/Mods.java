@@ -8,11 +8,13 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import lombok.Getter;
 import org.tillerino.osuApiModel.types.BitwiseMods;
 
 public enum Mods {
     /*
      * see https://github.com/peppy/osu-api/wiki
+     * and https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier
      */
     NoFail(1, "NF", true),
     Easy(2, "EZ", true),
@@ -27,21 +29,39 @@ public enum Mods {
     Flashlight(1024, "FL", true),
     Autoplay(2048, "AT", false),
     SpunOut(4096, "SO", true),
+    /** Autopilot */
     Relax2(8192, "AP", false),
     Perfect(16384, "PF", false),
-    Key4(32768, null, false),
-    Key5(65536, null, false),
-    Key6(131072, null, false),
-    Key7(262144, null, false),
-    Key8(524288, null, false),
-    FadeIn(1048576, null, false),
-    Random(2097152, null, false),
-    LastMod(4194304, null, false),
+    Key4(32768, "4K", false),
+    Key5(65536, "5K", false),
+    Key6(131072, "6K", false),
+    Key7(262144, "7K", false),
+    Key8(524288, "8K", false),
+    FadeIn(1048576, "FI", false),
+    Random(2097152, "RD", false),
+    Cinema(4194304, "CM", false),
+    Target(8388608, "TP", false),
+    Key9(16777216, "9K", false),
+    KeyCoop(33554432, "CP", false),
+    Key1(67108864, "1K", false),
+    Key3(134217728, "3K", false),
+    Key2(268435456, "2K", false),
+    ScoreV2(536870912, "SV2", false),
+    Mirror(1073741824, "MR", false),
+
+    /**
+     * This mod does not exist.
+     * In the V2 API, the opposite - "Classic" exists.
+     * Since this whole API is geared toward V1, we shoehorn compatibility in
+     * by marking all non-classic V2 scores as "V2".
+     * We use max value so that we don't interfere with future mods.
+     */
+    V2(Long.MAX_VALUE, null, false),
     ;
 
-    static HashMap<String, Mods> shortNames = new HashMap<>();
+    static final HashMap<String, Mods> shortNames = new HashMap<>();
 
-    private Mods(@BitwiseMods long bit, String shortName, boolean effective) {
+    Mods(@BitwiseMods long bit, String shortName, boolean effective) {
         this.bit = bit;
         this.shortName = shortName;
         this.effective = effective;
@@ -50,12 +70,11 @@ public enum Mods {
     @BitwiseMods
     final long bit;
 
-    String shortName;
-    boolean effective;
+    @Getter
+    final String shortName;
 
-    public String getShortName() {
-        return shortName;
-    }
+    @Getter
+    final boolean effective;
 
     public boolean is(@BitwiseMods long mods) {
         return (mods & bit) == bit;
@@ -66,8 +85,10 @@ public enum Mods {
 
         Mods[] values = values();
 
-        for (int i = 0; i < values.length; i++) {
-            if (values[i].is(mods)) ret.add(values[i]);
+        for (Mods value : values) {
+            if (value.is(mods)) {
+                ret.add(value);
+            }
         }
 
         return ret;
@@ -78,11 +99,15 @@ public enum Mods {
         LinkedList<Mods> ret = new LinkedList<>();
         if (modsString.equals("None")) return ret;
         String[] modsStrings = modsString.split(",");
-        for (int i = 0; i < modsStrings.length; i++) {
-            if (modsStrings[i].length() == 0) continue;
+        for (String string : modsStrings) {
+            if (string.isEmpty()) {
+                continue;
+            }
 
-            Mods mod = shortNames.get(modsStrings[i]);
-            if (mod == null) throw new RuntimeException(modsStrings[i]);
+            Mods mod = shortNames.get(string);
+            if (mod == null) {
+                throw new RuntimeException(string);
+            }
 
             ret.add(mod);
         }
@@ -98,9 +123,11 @@ public enum Mods {
     private static void prepare() {
         if (shortNames.isEmpty()) {
             Mods[] values = values();
-            for (int i = 0; i < values.length; i++) {
-                if (values[i].shortName == null) continue;
-                shortNames.put(values[i].shortName, values[i]);
+            for (Mods value : values) {
+                if (value.shortName == null) {
+                    continue;
+                }
+                shortNames.put(value.shortName, value);
             }
         }
     }
@@ -118,7 +145,9 @@ public enum Mods {
         LinkedList<Mods> ret = new LinkedList<>();
 
         for (Mods mod : mods) {
-            if (mod.effective) ret.add(mod);
+            if (mod.effective) {
+                ret.add(mod);
+            }
         }
 
         return ret;
@@ -128,8 +157,7 @@ public enum Mods {
         LinkedList<Mods> ret = new LinkedList<>();
 
         Mods[] values = values();
-        for (int i = 0; i < values.length; i++) {
-            Mods mod = values[i];
+        for (Mods mod : values) {
             if (mod.effective) ret.add(mod);
         }
 
@@ -143,10 +171,6 @@ public enum Mods {
             ret |= m.bit;
         }
         return ret;
-    }
-
-    public boolean isEffective() {
-        return effective;
     }
 
     @CheckForNull
