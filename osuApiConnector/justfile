@@ -1,0 +1,15 @@
+mvn := `if command -v mvnd &> /dev/null; then echo mvnd; else echo mvn; fi`
+
+[private]
+@recipes:
+  just --list
+
+check-plugin-updates:
+  {{mvn}} versions:display-plugin-updates -Dmaven.version.rules=https://gist.githubusercontent.com/Tillerino/43ce134419eb8b5f2f46e75c9664a623/raw/maven-versions-plugin-rules.xml
+
+check-dependency-updates:
+  {{mvn}} versions:display-dependency-updates -Dmaven.version.rules=https://gist.githubusercontent.com/Tillerino/43ce134419eb8b5f2f46e75c9664a623/raw/maven-versions-plugin-rules.xml
+
+release:
+  mvn release:prepare
+  mvn release:perform "-Darguments=-DskipTests"
