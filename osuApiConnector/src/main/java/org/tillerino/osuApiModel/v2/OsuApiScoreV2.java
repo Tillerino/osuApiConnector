@@ -7,6 +7,7 @@ import org.tillerino.osuApiModel.types.UserId;
 
 record OsuApiScoreV2(
         @JsonProperty(required = true, value = "total_score") long score,
+        @JsonProperty(required = true, value = "legacy_total_score") long legacyScore,
         @JsonProperty(required = true, value = "max_combo") int maxCombo,
         @JsonProperty(required = true, value = "is_perfect_combo") boolean perfect,
         @JsonProperty(required = true) List<ModWrapper> mods,

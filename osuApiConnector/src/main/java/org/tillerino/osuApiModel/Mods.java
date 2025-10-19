@@ -50,13 +50,15 @@ public enum Mods {
     Mirror(1073741824, "MR", false),
 
     /**
-     * This mod does not exist.
-     * In the V2 API, the opposite - "Classic" exists.
-     * Since this whole API is geared toward V1, we shoehorn compatibility in
-     * by marking all non-classic V2 scores as "V2".
-     * We use max positive value so that we don't interfere with future mods.
+     * Set for scores that were set on Lazer client.
+     * This is detected on the api when the legacy score is 0.
      */
-    V2(1L << 62, null, false),
+    Lazer(1L << 61, null, false),
+    /**
+     * Set for scores that were set on Lazer client with the classic mod
+     * and always set for scores that were set on Stable (not Lazer).
+     */
+    Classic(1L << 62, "CL", false),
     ;
 
     static final HashMap<String, Mods> shortNames = new HashMap<>();

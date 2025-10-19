@@ -106,7 +106,7 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
                 getProdDownloader().getBeatmapTop(53, 0, new String[] {"NM"}, OsuApiScore.class);
 
         for (OsuApiScore osuApiScore : beatmapTop) {
-            long apiMods = osuApiScore.getMods() & ~Mods.getMask(Mods.V2);
+            long apiMods = osuApiScore.getMods() & ~Mods.getMask(Mods.Classic) & ~Mods.getMask(Mods.Lazer);
             assertTrue(apiMods == 0
                     || apiMods == 32
                     || apiMods == 16384); // nomod scores always come with PF and SD scores
@@ -140,7 +140,7 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
         final OsuApiScore score = getProdDownloader().getScore(2070907, 239265, GameModes.OSU, OsuApiScore.class);
         assertNotNull(score.getPp());
         // classic mod not listed
-        assertThat(score).returns(Mods.getMask(Mods.Hidden, Mods.HardRock), OsuApiScore::getMods);
+        assertThat(score).returns(Mods.getMask(Mods.Hidden, Mods.HardRock, Mods.Classic), OsuApiScore::getMods);
     }
 
     @Test
@@ -148,8 +148,8 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
         final OsuApiScore score = getProdDownloader().getScore(8660293, 131891, GameModes.OSU, OsuApiScore.class);
         // score is listed with zero pp? not in beatmap top :shrug:
         assertNull(score.getPp());
-        // listed with V2 mod
-        assertThat(score).returns(Mods.getMask(Mods.V2, Mods.Mirror), OsuApiScore::getMods);
+        // listed with Lazer mod
+        assertThat(score).returns(Mods.getMask(Mods.Lazer, Mods.Mirror), OsuApiScore::getMods);
     }
 
     @Test
@@ -191,13 +191,5 @@ public class DownloaderV2Test extends AbstractMockServerV2Test {
 
         mockServer.verify(request("/api/v2/beatmaps/123"));
         mockServer.verify(request("/api/v2/beatmaps/123/attributes"));
-    }
-
-    static List<String> bitwiseToModsArray(int bitwise) {
-        if (bitwise == 0) {
-            return List.of("NM");
-        }
-
-        return Mods.getMods(bitwise).stream().map(Mods::getShortName).toList();
     }
 }

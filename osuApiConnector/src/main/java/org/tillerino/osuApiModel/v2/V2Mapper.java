@@ -32,10 +32,17 @@ interface V2Mapper {
     @Mapping(target = "modsList", ignore = true)
     void mapScoreToV1(OsuApiScoreV2 scoreV2, @MappingTarget OsuApiScore target);
 
+    @SuppressFBWarnings("TQ_UNKNOWN_VALUE_USED_WHERE_ALWAYS_STRICTLY_REQUIRED")
     default <T extends OsuApiScore> T mapScoreToV1(OsuApiScoreV2 scoreV2, Class<T> cls, @GameMode int mode) {
         T target = newInstance(cls);
         mapScoreToV1(scoreV2, target);
         target.setMode(mode);
+        if (scoreV2.legacyScore() == 0) {
+            target.setMods(target.getMods() | Mods.getMask(Mods.Lazer));
+        } else {
+            target.setMods(target.getMods() | Mods.getMask(Mods.Classic));
+            target.setScore(scoreV2.legacyScore());
+        }
         return target;
     }
 
@@ -52,31 +59,31 @@ interface V2Mapper {
     @Mapping(target = "modsList", ignore = true)
     void mapBeatmapScoreToV1(OsuApiScoreBeatmapV2 scoreV2, @MappingTarget OsuApiScore target);
 
+    @SuppressFBWarnings("TQ_UNKNOWN_VALUE_USED_WHERE_ALWAYS_STRICTLY_REQUIRED")
     default <T extends OsuApiScore> T mapBeatmapScoreToV1(OsuApiScoreBeatmapV2 scoreV2, Class<T> cls, @GameMode int mode) {
         T target = newInstance(cls);
         mapBeatmapScoreToV1(scoreV2, target);
         target.setMode(mode);
+        if (scoreV2.legacyScore() == 0) {
+            target.setMods(target.getMods() | Mods.getMask(Mods.Lazer));
+        } else {
+            target.setMods(target.getMods() | Mods.getMask(Mods.Classic));
+            target.setScore(scoreV2.legacyScore());
+        }
         return target;
     }
 
     @Named("modsToBitwise")
     @BitwiseMods
-    @SuppressFBWarnings("TQ_UNKNOWN_VALUE_USED_WHERE_ALWAYS_STRICTLY_REQUIRED")
     static long modsToBitwise(List<ModWrapper> modsArray) {
         if (modsArray == null) {
             return 0L;
         }
-        List<String> extracted =
-                modsArray.stream().map(ModWrapper::acronym).collect(Collectors.toCollection(ArrayList::new));
-        boolean classic = extracted.remove("CL");
-        long mask = Mods.getMask(extracted.stream()
+      return Mods.getMask(modsArray.stream()
+                .map(ModWrapper::acronym)
                 .map(Mods::fromShortName)
                 .filter(Objects::nonNull)
                 .toList());
-        if (!classic) {
-            mask |= Mods.getMask(Mods.V2);
-        }
-        return mask;
     }
 
     @Named("isoToEpoch")
